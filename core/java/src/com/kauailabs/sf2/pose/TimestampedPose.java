@@ -8,7 +8,8 @@ import com.kauailabs.sf2.orientation.TimestampedQuaternion;
  * The Pose class represents a 2-dimensional position, and a 
  * 3-dimensional orientation at a given instant in time.
  * 
- * Note that the Pose class also provides a timestamp.
+ * Note that the Pose class also provides a timestamp, representing
+ * the sensor timestamp for the "master timestamp clock source".
  * 
  * In addition to representing a pose, the Pose class can also 
  * represent an amount of change in pose, in which case the 

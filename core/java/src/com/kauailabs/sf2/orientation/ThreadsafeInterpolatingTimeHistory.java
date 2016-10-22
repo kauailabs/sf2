@@ -2,7 +2,23 @@ package com.kauailabs.sf2.orientation;
 
 import java.util.ArrayList;
 
-/* T is a class which implements the interfaces Cloneable and Timestamp */
+/**
+ * The ThreadsafeInterpolatingTimeHistory class implements an array of
+ * timestamped objects which can be inserted from one thread and accessed
+ * by another thread.  The accessing thread can lookup objects within the
+ * ThreadsafeInterpolatingTimeHistory based upon a timesatamp, and in
+ * cases where an exact timestamp match is not found, and object with
+ * interpolated values is returned.
+ * <p>
+ * This class is a template class, meaning that it can be used to contain
+ * any type of object which implements the ITimestampedValue and
+ * IValueInterpolator interfaces.
+ * <p>
+ * The implementation of this class is such that the contained objects
+ * are statically allocated to avoid memory allocation when objects are
+ * added.
+ * @author Scott
+ */
 
 public class ThreadsafeInterpolatingTimeHistory<T extends ITimestampedValue & IValueInterpolator<T>> {
     ArrayList<T> history;
@@ -23,6 +39,12 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ITimestampedValue & IV
 		return new_t;
     }
     
+    /**
+     * Constructs a ThreadsafeInterpolatingTimeHihstory to hold up to a specified number of 
+     * objects of the specified class.
+     * @param _class - the Java class of the objects to be contained.
+     * @param num_samples - the maximum number of objects to be contained.
+     */
     public ThreadsafeInterpolatingTimeHistory (Class<T> _class, int num_samples) {
     	this._class = _class;
     	history_size = num_samples;
@@ -38,6 +60,10 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ITimestampedValue & IV
     	num_valid_samples = 0;
     }
     
+    /**
+     * Clears all contents of the ThreadsafeInterpolatingTimeHistory by marking all
+     * contained objects as invalid.
+     */
     public void reset() {
     	synchronized(this) {
 	    	for ( int i = 0; i < history_size; i++ ) {
@@ -49,10 +75,18 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ITimestampedValue & IV
     	}
     }
     
+    /**
+     * Returns the current count of valid objects in this ThreadsafeInterpolatingTimeHistory.
+     * @return
+     */
     public int getValidSampleCount() {
     	return num_valid_samples;
     }
     
+    /**
+     * Adds the provided object to the ThreadsafeInterpolatingTimeHistory.
+     * @param t - the object to add
+     */
     public void add(T t) {
     	synchronized(this) {
     		T existing = history.get(curr_index);
@@ -67,6 +101,15 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ITimestampedValue & IV
     	}
     }
     
+    /**
+     * Retrieves the object in the ThreadsafeInterpolatingTimeHistory which matches
+     * the provided timestamp.  If an exact match is not found, a new object will be
+     * created using interpolated values, based upon the nearest objects preceding and
+     * following the requested timestamp.
+     * @param requested_timestamp - the timeatamp for which to return an object
+     * @return - returns the object (either actual or interpolated) matching the requested
+     * timestamp.  If no object could be located or interpolated, null is returned.
+     */
     public T get( long requested_timestamp ) {
     	T match = null;
     	long nearest_preceding_timestamp = Long.MIN_VALUE;
@@ -140,6 +183,10 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ITimestampedValue & IV
     	return match;
     }
     
+    /**
+     * Retrieves the most recently-added object in the ThreadsafeInterpolatingTimeHistory.
+     * @return - the most recently-added object, or null if no valid objects exist
+     */
     public T getMostRecent() {
     	T most_recent_t = null;
     	synchronized(this){

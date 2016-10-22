@@ -26,6 +26,11 @@ public class navXSensor implements ITimestampedQuaternionSensor, ITimestampedDat
 	}
 	
 	@Override
+	public boolean deregisterCallback(ITimestampedQuaternionSensorDataSubscriber subscriber) {
+		return this.navx_sensor.deregisterCallback(this);
+	}
+	
+	@Override
 	public void timestampedDataReceived(long system_timestamp, long sensor_timestamp, AHRSUpdateBase data, Object context) {
 		ITimestampedQuaternionSensorDataSubscriber subscriber = 
 				(ITimestampedQuaternionSensorDataSubscriber)context;
