@@ -1,4 +1,4 @@
-package com.kauailabs.sf2.orientation;
+package com.kauailabs.sf2.interpolation;
 
 /**
  * The IValueInterpolator interface must be implemented by all objects which

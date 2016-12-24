@@ -11,6 +11,14 @@ package com.kauailabs.sf2.orientation;
 
 import java.lang.Math;
 
+import com.kauailabs.sf2.interpolation.IInterpolate;
+import com.kauailabs.sf2.quantity.IQuantity;
+import com.kauailabs.sf2.quantity.IQuantityContainer;
+import com.kauailabs.sf2.quantity.Scalar;
+import com.kauailabs.sf2.time.ICopy;
+import com.kauailabs.sf2.units.Unit;
+import com.kauailabs.sf2.units.Unit.IUnit;
+
 /**
  * The Quaternion class provides methods to operate on a quaternion.
  * <a href="https://en.wikipedia.org/wiki/Quaternion">Quaternions</a> are used 
@@ -41,7 +49,7 @@ import java.lang.Math;
  * @author Scott
  */
 
-public class Quaternion {
+public class Quaternion implements IInterpolate<Quaternion>, ICopy<Quaternion>, IQuantity, IQuantityContainer {
 
     private float w;
     private float x;
@@ -146,30 +154,30 @@ public class Quaternion {
      * Extracts the yaw angle value from the Quaternion.
      * The Return value is in units of Radians.
      */
-    public float getYawRadians() {
+    public void getYawRadians(Scalar yaw) {
     	FloatVectorStruct ypr = new FloatVectorStruct();
     	getYawPitchRollRadians(ypr);
-    	return ypr.x;
+    	yaw.set(ypr.x);
     }
     
     /**
      * Extracts the pitch angle value from the Quaternion.
      * The Return value is in units of Radians.
      */
-    public float getPitchRadians() {
+    public void getPitch(Scalar pitch) {
     	FloatVectorStruct ypr = new FloatVectorStruct();
     	getYawPitchRollRadians(ypr);
-    	return ypr.y;
+    	pitch.set(ypr.y);
     }
     
     /**
      * Extracts the roll angle value from the Quaternion.
      * The Return value is in units of Radians.
      */
-    public float getRollRadians() {
+    public void getRoll(Scalar roll) {
     	FloatVectorStruct ypr = new FloatVectorStruct();
     	getYawPitchRollRadians(ypr);
-    	return ypr.z;
+    	roll.set(ypr.z);
     }
     
     /**
@@ -328,4 +336,46 @@ public class Quaternion {
      * @return Quaternion Z component value.
      */    
     public float getZ() { return z; }
+
+	@Override
+	public Quaternion interpolate(Quaternion to, double time_ratio) {
+		return Quaternion.slerp(this, to, time_ratio);
+	}
+
+	@Override
+	public void copy(Quaternion t) {
+		this.w = t.w;
+		this.x = t.x;
+		this.y = t.y;
+		this.z = t.z;
+	}
+	
+	@Override
+	public Quaternion instantiate_copy() {
+		return new Quaternion(this);
+	}
+
+	@Override
+	public IQuantity[] getQuantities() {
+		return new IQuantity[] {
+			new Scalar(w), 
+			new Scalar(x), 
+			new Scalar(y), 
+			new Scalar(z)
+		};
+	}
+	
+	static public IUnit[] getUnits() {
+		return new IUnit[] {
+			new Unit().new Unitless(),			
+			new Unit().new Unitless(),			
+			new Unit().new Unitless(),			
+			new Unit().new Unitless(),			
+		};
+	}
+
+	@Override
+	public String toPrintableString() {
+		return Float.toString(w) + ", " + Float.toString(x) + ", " + Float.toString(y) + ", " + Float.toString(z);
+	}
 }

@@ -1,7 +1,12 @@
 package com.kauailabs.sf2.pose.drivetrain;
 
-import com.kauailabs.sf2.orientation.TimestampedQuaternion;
-import com.kauailabs.sf2.pose.TimestampedPose;
+import java.util.List;
+
+import com.kauailabs.sf2.orientation.Quaternion;
+import com.kauailabs.sf2.pose.Pose;
+import com.kauailabs.sf2.quantity.Scalar;
+import com.kauailabs.sf2.time.Timestamp;
+import com.kauailabs.sf2.time.TimestampedValue;
 
 public interface IDriveTrainKinematics {
 
@@ -55,12 +60,12 @@ public interface IDriveTrainKinematics {
      * occurred (e.g., one or more of the input parameters were invalid).
      */	
 	public boolean step(
-			 long system_timestamp,
-			 TimestampedPose pose_last,
-			 TimestampedQuaternion quat_curr, 
-		  	 double drive_wheel_distance_delta_curr[], 
-		  	 double steer_wheel_angle_degrees_curr[],
-		  	 double drive_motor_current_amps_curr[],
-		  	 TimestampedPose pose_curr_out);
+			 Timestamp system_timestamp,
+			 TimestampedValue<Pose> pose_last,
+			 TimestampedValue<Quaternion> quat_curr, 
+		  	 List<TimestampedValue<Scalar>> drive_wheel_distance_delta_curr, 
+		  	 List<TimestampedValue<Scalar>> steer_wheel_angle_degrees_curr,
+		  	 List<TimestampedValue<Scalar>> drive_motor_current_amps_curr,
+		  	 TimestampedValue<Pose> pose_curr_out);
 	
 }

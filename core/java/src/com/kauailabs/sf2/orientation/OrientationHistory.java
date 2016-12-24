@@ -1,7 +1,15 @@
 package com.kauailabs.sf2.orientation;
 
-import com.kauailabs.sf2.sensors.ITimestampedQuaternionSensor;
-import com.kauailabs.sf2.sensors.ITimestampedQuaternionSensorDataSubscriber;
+import com.kauailabs.sf2.quantity.IQuantity;
+import com.kauailabs.sf2.quantity.Scalar;
+import com.kauailabs.sf2.sensor.ISensorDataSource;
+import com.kauailabs.sf2.sensor.ISensorDataSubscriber;
+import com.kauailabs.sf2.sensor.ISensorInfo;
+import com.kauailabs.sf2.sensor.SensorDataSourceInfo;
+import com.kauailabs.sf2.time.ThreadsafeInterpolatingTimeHistory;
+import com.kauailabs.sf2.time.Timestamp;
+import com.kauailabs.sf2.time.TimestampedValue;
+import com.kauailabs.sf2.units.Unit;
 
 /**
  * The OrientationHistory class implements a timestamped history of 
@@ -19,16 +27,14 @@ import com.kauailabs.sf2.sensors.ITimestampedQuaternionSensorDataSubscriber;
  * object is created via interpolation.
  * @author Scott
  */
-public class OrientationHistory implements ITimestampedQuaternionSensorDataSubscriber{
+public class OrientationHistory implements ISensorDataSubscriber{
 
-	ITimestampedQuaternionSensor quat_sensor;
-	ThreadsafeInterpolatingTimeHistory<TimestampedQuaternion> orientation_history;
-
-	public final int MAX_ORIENTATION_HISTORY_LENGTH_SECONDS = 10; 	
+	ISensorDataSource quat_sensor;
+	ThreadsafeInterpolatingTimeHistory<TimestampedValue<Quaternion>> orientation_history;
+	Scalar temp;
+	int quaternion_quantity_index;
 	
-	public final float INVALID_ANGLE = Float.NaN;
-	
-	public final float RADIANS_TO_DEGREES = (float) (180.0 / Math.PI);
+	public final int MAX_ORIENTATION_HISTORY_LENGTH_NUM_SAMPLES = 1000; 	
 	
 	/**
 	 * Constructs an OrientationHistory object with a specified size.  The OrientationHistory
@@ -44,31 +50,43 @@ public class OrientationHistory implements ITimestampedQuaternionSensorDataSubsc
 	 * @param history_length_seconds - the number of seconds the history will represent.  This value
 	 * may not be larger than @value #MAX_ORIENTATION_HISTORY_IN_SECONDS seconds.
 	 */
-	public OrientationHistory(ITimestampedQuaternionSensor quat_sensor, int history_length_seconds) { 
+	public OrientationHistory(ISensorInfo quat_sensor, int history_length_num_samples) { 
 		
-		this.quat_sensor = quat_sensor;
+		this.quat_sensor = quat_sensor.getSensorDataSource();
 		
-		if ( history_length_seconds > MAX_ORIENTATION_HISTORY_LENGTH_SECONDS) {
-			history_length_seconds = MAX_ORIENTATION_HISTORY_LENGTH_SECONDS;
+		int index = 0;
+		quaternion_quantity_index = -1;
+		for ( SensorDataSourceInfo item : this.quat_sensor.getSensorDataSourceInfos()){
+			if ( item.getName().equalsIgnoreCase("Quaternion")) {
+				quaternion_quantity_index = index;
+				break;
+			}
+			index++;
 		}
 		
-		int ahrs_update_rate = this.quat_sensor.getUpdateRateHz();		
-		this.orientation_history = new ThreadsafeInterpolatingTimeHistory<TimestampedQuaternion>(
-				TimestampedQuaternion.class, ahrs_update_rate * history_length_seconds);
+		if (quaternion_quantity_index == -1) {
+			throw new IllegalArgumentException("The provided ISensorInfo (quat_sensor) object"
+					+ "must contain a SensorDataSourceInfo object named 'Quaternion'.");
+		}
+		
+		if ( history_length_num_samples > MAX_ORIENTATION_HISTORY_LENGTH_NUM_SAMPLES) {
+			history_length_num_samples = MAX_ORIENTATION_HISTORY_LENGTH_NUM_SAMPLES;
+		}
+		Quaternion default_quat = new Quaternion();
+		TimestampedValue<Quaternion> default_ts_quat = new TimestampedValue<Quaternion>(default_quat);
+		this.orientation_history = new ThreadsafeInterpolatingTimeHistory<TimestampedValue<Quaternion>>(
+				default_ts_quat, history_length_num_samples,quat_sensor.getSensorTimestampInfo());
 
-		this.quat_sensor.registerCallback(this);		
+		this.quat_sensor.subscribe(this);		
+		
+		temp = new Scalar();
 	}
 		
-	@Override
-	public void timestampedDataReceived(long system_timestamp, TimestampedQuaternion update) {
-		orientation_history.add(update);		
-	}
-	
 	/**
 	 * Reset the OrientationHistory, clearing all existing entries.
 	 * @param quat_curr
 	 */
-	public void reset(TimestampedQuaternion quat_curr) {
+	public void reset(TimestampedValue<Quaternion> quat_curr) {
 		orientation_history.reset();
 	}
 	
@@ -76,7 +94,7 @@ public class OrientationHistory implements ITimestampedQuaternionSensorDataSubsc
 	 * Retrieves the most recently added Quaternion.
 	 * @return
 	 */
-	public TimestampedQuaternion getCurrentQuaternion() {
+	public TimestampedValue<Quaternion> getCurrentQuaternion() {
 		return orientation_history.getMostRecent();
 	}
 	
@@ -90,7 +108,7 @@ public class OrientationHistory implements ITimestampedQuaternionSensorDataSubsc
 	 * @param requested_timestamp - sensor timestamp to retrieve 
 	 * @return TimestampedQuaternion at requested timestamp, or null.
 	 */
-	public TimestampedQuaternion getQuaternionAtTime(long requested_timestamp) {
+	public TimestampedValue<Quaternion> getQuaternionAtTime(long requested_timestamp) {
 		return orientation_history.get(requested_timestamp);
 	}
 	
@@ -104,14 +122,13 @@ public class OrientationHistory implements ITimestampedQuaternionSensorDataSubsc
 	 * value INVALID_ANGLE (NaN) will be returned.
 	 */
     public float getYawDegreesAtTime( long requested_timestamp ) {
-    	float yaw;
-    	TimestampedQuaternion match = getQuaternionAtTime( requested_timestamp );
+    	TimestampedValue<Quaternion> match = getQuaternionAtTime( requested_timestamp );
     	if ( match != null ) {
-    		yaw = match.getYawRadians() * RADIANS_TO_DEGREES;
+    		match.getValue().getYawRadians(temp);
+    		return temp.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
     	} else {
-    		yaw = INVALID_ANGLE;
+    		return Float.NaN;
     	}
-    	return yaw;
     }
     
 	/**
@@ -124,14 +141,13 @@ public class OrientationHistory implements ITimestampedQuaternionSensorDataSubsc
 	 * value INVALID_ANGLE (NaN) will be returned.
 	 */
     public float getPitchDegreesAtTime( long requested_timestamp ) {
-    	float pitch;
-    	TimestampedQuaternion match = getQuaternionAtTime( requested_timestamp );
+    	TimestampedValue<Quaternion> match = getQuaternionAtTime( requested_timestamp );
     	if ( match != null ) {
-    		pitch = match.getPitchRadians() * RADIANS_TO_DEGREES;
+    		match.getValue().getPitch(temp);
+    		return temp.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
     	} else {
-    		pitch = INVALID_ANGLE;
+    		return Float.NaN;
     	}
-    	return pitch;
     }
     
 	/**
@@ -144,13 +160,20 @@ public class OrientationHistory implements ITimestampedQuaternionSensorDataSubsc
 	 * value INVALID_ANGLE (NaN) will be returned.
 	 */
     public float getRollDegreesAtTime( long requested_timestamp ) {
-    	float roll;
-    	TimestampedQuaternion match = getQuaternionAtTime( requested_timestamp );
+    	TimestampedValue<Quaternion> match = getQuaternionAtTime( requested_timestamp );
     	if ( match != null ) {
-    		roll = match.getRollRadians() * RADIANS_TO_DEGREES;
+    		match.getValue().getRoll(temp);
+    		return temp.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
     	} else {
-    		roll = INVALID_ANGLE;
+    		return Float.NaN;
     	}
-    	return roll;
-    }  	
+    }
+
+	@Override
+	public void publish(IQuantity[] curr_values, Timestamp timestamp) {
+		Quaternion q = ((Quaternion)curr_values[quaternion_quantity_index]);
+		TimestampedValue<Quaternion> tsq = new TimestampedValue<Quaternion>(q);
+		tsq.setTimestamp(timestamp.getMilliseconds());
+		orientation_history.add(tsq);		
+	}  	
 }

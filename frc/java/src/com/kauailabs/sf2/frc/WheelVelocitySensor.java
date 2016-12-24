@@ -1,6 +1,6 @@
-package com.kauailabs.sf2.sensors.frc;
+package com.kauailabs.sf2.frc;
 
-import com.kauailabs.sf2.sensors.IWheelVelocitySensor;
+import com.kauailabs.sf2.sensor.IWheelVelocitySensor;
 
 import edu.wpi.first.wpilibj.CANJaguar;
 import edu.wpi.first.wpilibj.CANTalon;

@@ -1,6 +1,8 @@
-package com.kauailabs.sf2.orientation;
+package com.kauailabs.sf2.time;
 
 import java.util.ArrayList;
+
+import com.kauailabs.sf2.interpolation.IValueInterpolator;
 
 /**
  * The ThreadsafeInterpolatingTimeHistory class implements an array of
@@ -20,44 +22,36 @@ import java.util.ArrayList;
  * @author Scott
  */
 
-public class ThreadsafeInterpolatingTimeHistory<T extends ITimestampedValue & IValueInterpolator<T>> {
+public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampedValue & IValueInterpolator<T>> {
     ArrayList<T> history;
     int history_size;
     int curr_index;
     int num_valid_samples;
-    Class<T> _class;
+    T default_obj;
+    TimestampInfo ts_info;
 
-    private T create() {
-    	T new_t = null;
-		try {
-			new_t = _class.newInstance();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
-		return new_t;
-    }
-    
     /**
      * Constructs a ThreadsafeInterpolatingTimeHihstory to hold up to a specified number of 
      * objects of the specified class.
      * @param _class - the Java class of the objects to be contained.
      * @param num_samples - the maximum number of objects to be contained.
      */
-    public ThreadsafeInterpolatingTimeHistory (Class<T> _class, int num_samples) {
-    	this._class = _class;
+    
+    public ThreadsafeInterpolatingTimeHistory (T default_obj, int num_samples, TimestampInfo ts_info) {
     	history_size = num_samples;
     	history = new ArrayList<T>(num_samples);
+    	
+    	this.default_obj = default_obj;
 
     	for ( int i = 0; i < history_size; i++ ) {
-    		T new_t = create();
+    		T new_t = default_obj.instantiate_copy();
     		if ( new_t != null ) {    	
     			history.add(i,new_t);
     		}
     	}
     	curr_index = 0;
     	num_valid_samples = 0;
+    	this.ts_info = ts_info;
     }
     
     /**
@@ -172,7 +166,7 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ITimestampedValue & IV
 	    		/* Make a copy of the object, so that caller does not directly reference
 	    		 * an object within the volatile (threadsafe) history.
 	    		 */
-	    		T new_t = create();
+	    		T new_t = default_obj.instantiate_copy();
 	    		if ( new_t != null ) {
 	    			new_t.copy(match);
 	    			match = new_t;
@@ -202,7 +196,7 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ITimestampedValue & IV
 				} else {
 					/* Make a copy of the object, so that caller does not directly
 					 * reference an object within the volatile (threadsafe) history. */
-		    		T new_t = create();
+		    		T new_t = default_obj.instantiate_copy();
 		    		if ( new_t != null ) {
 		    			new_t.copy(most_recent_t);
 		    		}

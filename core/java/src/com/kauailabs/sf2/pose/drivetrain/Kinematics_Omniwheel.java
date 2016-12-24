@@ -1,12 +1,16 @@
 package com.kauailabs.sf2.pose.drivetrain;
 
+import java.util.List;
+
 import com.kauailabs.sf2.orientation.Quaternion;
-import com.kauailabs.sf2.orientation.TimestampedQuaternion;
-import com.kauailabs.sf2.pose.TimestampedPose;
+import com.kauailabs.sf2.pose.Pose;
+import com.kauailabs.sf2.quantity.Scalar;
+import com.kauailabs.sf2.time.Timestamp;
+import com.kauailabs.sf2.time.TimestampedValue;
 
 public class Kinematics_Omniwheel implements IDriveTrainKinematics {
 
-	TimestampedQuaternion last_quat;
+	TimestampedValue<Quaternion> last_quat;
 	DriveTrainParameters drive_params;
 	int num_drive_wheels;
 	
@@ -16,8 +20,10 @@ public class Kinematics_Omniwheel implements IDriveTrainKinematics {
 
 	final int NUM_WHEELS = 3;	
 	
-	TimestampedQuaternion q_diff_temp;
-	double enc_based_pose_change[];
+	float temp_distance_deltas[];
+	TimestampedValue<Quaternion> q_diff_temp;
+	float enc_based_pose_change[];
+	Scalar temp;
 	
 	double fwdMatrix [][];	
 	
@@ -30,7 +36,7 @@ public class Kinematics_Omniwheel implements IDriveTrainKinematics {
 	
 	public Kinematics_Omniwheel(DriveTrainParameters drive_params, double first_drive_wheel_angle_degrees) {	
 		
-		this.last_quat = new TimestampedQuaternion();
+		this.last_quat = new TimestampedValue<Quaternion>(new Quaternion());
 		this.drive_params = drive_params;
 		
 		this.num_drive_wheels = drive_params.getNumDriveWheels();
@@ -57,8 +63,10 @@ public class Kinematics_Omniwheel implements IDriveTrainKinematics {
 		}
 		
 		/* Allocate memory for working variables. */
-		this.enc_based_pose_change = new double[3]; 
-		this.q_diff_temp = new TimestampedQuaternion();
+		this.temp_distance_deltas = new float[NUM_WHEELS];
+		this.enc_based_pose_change = new float[3]; 
+		this.q_diff_temp = new TimestampedValue<Quaternion>(new Quaternion());
+		temp = new Scalar();
 	}
 	
 	@Override
@@ -73,21 +81,25 @@ public class Kinematics_Omniwheel implements IDriveTrainKinematics {
 	/* Note:  the individual drive/steer wheel velocities are assumed to be at the same timestamp     */
 	/* as the current TimestampedQuaternion. */
 	public boolean step(
-			 long system_timestamp,
-			 TimestampedPose pose_last,
-			 TimestampedQuaternion quat_curr, 
-		  	 double drive_wheel_distance_delta_inches[], 
-		  	 double steer_wheel_angle_degrees_curr[],
-		  	 double drive_motor_current_amps_curr[],
-		  	 TimestampedPose pose_curr_out) {
+			 Timestamp system_timestamp,
+			 TimestampedValue<Pose> pose_last,
+			 TimestampedValue<Quaternion> quat_curr, 
+		  	 List<TimestampedValue<Scalar>> drive_wheel_distance_delta_curr, 
+		  	 List<TimestampedValue<Scalar>> steer_wheel_angle_degrees_curr,
+		  	 List<TimestampedValue<Scalar>> drive_motor_current_amps_curr,
+		  	 TimestampedValue<Pose> pose_curr_out) {
 
-		Quaternion.difference(quat_curr, pose_last.getOrientation(), q_diff_temp);		
+		Quaternion.difference(quat_curr.getValue(), pose_last.getValue().getOrientation(), q_diff_temp.getValue());		
 		long delta_t = quat_curr.getTimestamp() - pose_last.getTimestamp();
-		q_diff_temp.set(q_diff_temp, delta_t);
+		q_diff_temp.set(q_diff_temp.getValue(), delta_t);
 		
-		omniwheelForwardKinematics(drive_wheel_distance_delta_inches, enc_based_pose_change);
+		for ( int i = 0; i < NUM_WHEELS; i++) {
+			temp_distance_deltas[i] = drive_wheel_distance_delta_curr.get(i).getValue().get();
+		}
+		omniwheelForwardKinematics(temp_distance_deltas, enc_based_pose_change);
 
-		double theta = q_diff_temp.getYawRadians();
+		q_diff_temp.getValue().getYawRadians(temp);
+		double theta = temp.get();
 		
 		/* Adjust X/Y offset deltas, currently in body frame, to be in
 		 * World frame - by rotating these values by the current body rotation */
@@ -96,10 +108,10 @@ public class Kinematics_Omniwheel implements IDriveTrainKinematics {
 		enc_based_pose_change[Y] *= (float)Math.cos(theta); 
 		
 		/* Use Encoder-derived values for Translational Motion */
-		pose_curr_out.addOffsets( enc_based_pose_change[X], enc_based_pose_change[Y] );		                                              
+		pose_curr_out.getValue().addOffsets( enc_based_pose_change[X], enc_based_pose_change[Y] );		                                              
 		
 		/* Use IMU-derived values for orientation. */
-		pose_curr_out.getOrientation().copy(quat_curr);
+		pose_curr_out.getValue().getOrientation().copy(quat_curr.getValue());
 		
 		return true;
 	}
@@ -110,7 +122,7 @@ public class Kinematics_Omniwheel implements IDriveTrainKinematics {
 	/*    which is to say enc_ticks/delta_t.                                 */
 	/* Note:  Input values are ordered from left front corner, clockwise */
 	/* Note:  Output values are ordered LinearX (Strafe), LinearY (Forward), RotZ (Rotate) */
-	void omniwheelForwardKinematics( double wheel_velocities_in[], double body_velocity_out[] ) {
+	void omniwheelForwardKinematics( float wheel_velocities_in[], float body_velocity_out[] ) {
 		for ( int i = 0; i < 3; i++ ) {
 			body_velocity_out[i] = 0;
 			for ( int wheel = 0; wheel < 4; wheel++ ) {
