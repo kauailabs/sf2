@@ -1,0 +1,3 @@
+If you are new to using SF2, please visit the SF2 website at http://sf2.kauailabs.com.
+
+This site includes documentation on Installation and Software, as well as example code and much more.
