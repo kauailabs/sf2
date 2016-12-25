@@ -37,17 +37,14 @@ public class SensorDataSourceInfo {
 	 */
 	public IUnit[] getQuantityUnits() { return units; }
 
-	static public IQuantity[] getQuantityArray(SensorDataSourceInfo[] data_source) {
-		ArrayList<IQuantity> quantity_list = new ArrayList<IQuantity>();
+	static public void getQuantityArray(SensorDataSourceInfo[] data_source, ArrayList<IQuantity> quantity_list) {
 		for ( SensorDataSourceInfo data_source_info : data_source ) {
 			try {
 				quantity_list.add(data_source_info.getQuantity().getClass().newInstance());
 			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
-				return null;
+				return;
 			}
 		}
-		IQuantity[] result = new IQuantity[data_source.length];
-		return quantity_list.toArray(result);
 	}
 }

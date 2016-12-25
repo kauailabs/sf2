@@ -1,5 +1,7 @@
 package com.kauailabs.sf2.quantity;
 
+import java.util.ArrayList;
+
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.time.ICopy;
 
@@ -34,8 +36,9 @@ public class Vector implements IInterpolate<Vector>, ICopy<Vector>, IQuantity, I
 		out.magnitude = magnitude;
 	}
 	@Override
-	public void getQuantities(IQuantity[] quantities) {
-		quantities = new IQuantity[] { direction, magnitude };
+	public void getQuantities(ArrayList<IQuantity> quantities) {
+		direction.getQuantities(quantities);
+		magnitude.getQuantities(quantities);
 	}
 	@Override
 	public void getPrintableString(String printable_string) {

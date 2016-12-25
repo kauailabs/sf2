@@ -1,5 +1,7 @@
 package com.kauailabs.sf2.pose;
 
+import java.util.ArrayList;
+
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.orientation.Quaternion;
 import com.kauailabs.sf2.quantity.IQuantity;
@@ -103,18 +105,13 @@ public class Pose implements IInterpolate<Pose>, ICopy<Pose>, IQuantity, IQuanti
 	}
 
 	@Override
-	public void getQuantities(IQuantity[] quantities) {
-		quantities = new IQuantity[] {
-			new Scalar(x_offset_inches),
-			new Scalar(y_offset_inches),
-			new Scalar(quat.getW()),
-			new Scalar(quat.getX()),
-			new Scalar(quat.getY()),
-			new Scalar(quat.getZ())
-		};
+	public void getQuantities(ArrayList<IQuantity> quantities) {
+		quantities.add(new Scalar(x_offset_inches));
+		quantities.add(new Scalar(y_offset_inches));
+		quat.getQuantities(quantities);
 	}
-	static public void getUnits(IUnit[] units) {
-		units = new IUnit[] {
+	static public IUnit[] getUnits() {
+		return new IUnit[] {
 			new Unit().new Distance().new Inches(),
 			new Unit().new Distance().new Inches(),
 			new Unit().new Unitless(),			

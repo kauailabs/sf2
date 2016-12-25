@@ -10,6 +10,7 @@
 package com.kauailabs.sf2.orientation;
 
 import java.lang.Math;
+import java.util.ArrayList;
 
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.quantity.IQuantity;
@@ -354,17 +355,15 @@ public class Quaternion implements IInterpolate<Quaternion>, ICopy<Quaternion>, 
 	}
 
 	@Override
-	public void getQuantities(IQuantity[] quantities) {
-		quantities = new IQuantity[] {
-			new Scalar(w), 
-			new Scalar(x), 
-			new Scalar(y), 
-			new Scalar(z)
-		};
+	public void getQuantities(ArrayList<IQuantity> quantities) {
+		quantities.add(new Scalar(w));
+		quantities.add(new Scalar(x));
+		quantities.add(new Scalar(y));
+		quantities.add(new Scalar(z));
 	}
 	
-	static public void getUnits(IUnit[] units) {
-		units = new IUnit[] {
+	static public IUnit[] getUnits() {
+		return new IUnit[] {
 			new Unit().new Unitless(),			
 			new Unit().new Unitless(),			
 			new Unit().new Unitless(),			

@@ -9,6 +9,8 @@
 /*----------------------------------------------------------------------------*/
 package com.kauailabs.sf2.time;
 
+import java.util.ArrayList;
+
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.interpolation.IValueInterpolator;
 import com.kauailabs.sf2.quantity.IQuantity;
@@ -177,14 +179,8 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantityCo
 	}
 
 	@Override
-	public void getQuantities(IQuantity[] quantities) {
-		IQuantity[] value_quantities = new IQuantity[1];
-		this.value.getQuantities(value_quantities);
-		IQuantity[] timestamped_value_quantities = new IQuantity[value_quantities.length+1];
-		timestamped_value_quantities[0] = new Scalar(timestamp);
-		for ( int i = 0; i < value_quantities.length; i++) {
-			timestamped_value_quantities[i+1] = value_quantities[i];
-		}
-		quantities = value_quantities;
+	public void getQuantities(ArrayList<IQuantity> quantities) {
+		quantities.add(new Scalar(timestamp));
+		this.value.getQuantities(quantities);
 	}
 }

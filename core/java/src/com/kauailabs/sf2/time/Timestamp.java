@@ -1,5 +1,7 @@
 package com.kauailabs.sf2.time;
 
+import java.util.ArrayList;
+
 import com.kauailabs.sf2.quantity.Count;
 import com.kauailabs.sf2.quantity.IQuantity;
 import com.kauailabs.sf2.quantity.IQuantityContainer;
@@ -9,6 +11,11 @@ public class Timestamp implements IQuantity, IQuantityContainer {
 	public enum TimestampResolution { Second, Millisecond, Microsecond, Nanosecond };
 	long timestamp;
 	TimestampResolution resolution;
+	
+	public Timestamp() {
+		this.timestamp = 0;
+		this.resolution = TimestampResolution.Millisecond;
+	}
 	
 	public Timestamp(Timestamp ts_copy) {
 		this.timestamp = ts_copy.timestamp;
@@ -31,6 +38,14 @@ public class Timestamp implements IQuantity, IQuantityContainer {
 	
 	public void setTimestamp(long new_timestamp) {
 		this.timestamp = new_timestamp;
+	}
+	
+	public void setResolution(TimestampResolution r) {
+		this.resolution = r;
+	}
+	
+	public TimestampResolution getResolution() {
+		return this.resolution;
 	}
 	
 	public static final long MILLISECONDS_PER_SECOND = 1000;
@@ -111,10 +126,8 @@ public class Timestamp implements IQuantity, IQuantityContainer {
 	}
 
 	@Override
-	public void getQuantities(IQuantity[] quantities) {
-		quantities = new IQuantity[]{
-			new Count(timestamp)
-		};
+	public void getQuantities(ArrayList<IQuantity> quantities) {
+		quantities.add(new Count(timestamp));
 	}
 
 	@Override

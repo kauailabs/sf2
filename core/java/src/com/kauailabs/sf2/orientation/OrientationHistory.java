@@ -1,5 +1,7 @@
 package com.kauailabs.sf2.orientation;
 
+import java.util.ArrayList;
+
 import com.kauailabs.sf2.quantity.IQuantity;
 import com.kauailabs.sf2.quantity.Scalar;
 import com.kauailabs.sf2.sensor.ISensorDataSource;
@@ -56,7 +58,9 @@ public class OrientationHistory implements ISensorDataSubscriber{
 		
 		int index = 0;
 		quaternion_quantity_index = -1;
-		for ( SensorDataSourceInfo item : this.quat_sensor.getSensorDataSourceInfos()){
+		ArrayList<SensorDataSourceInfo> sensor_data_source_infos = new ArrayList<SensorDataSourceInfo>();
+		quat_sensor.getSensorDataSource().getSensorDataSourceInfos(sensor_data_source_infos);
+		for ( SensorDataSourceInfo item : sensor_data_source_infos){
 			if ( item.getName().equalsIgnoreCase("Quaternion")) {
 				quaternion_quantity_index = index;
 				break;
@@ -123,9 +127,8 @@ public class OrientationHistory implements ISensorDataSubscriber{
 	 */
     public float getYawDegreesAtTime( long requested_timestamp ) {
     	TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
-    	getQuaternionAtTime( requested_timestamp, match );
-    	if ( match != null ) {
-    		match.getValue().getYawRadians(temp);
+    	if(getQuaternionAtTime( requested_timestamp, match )) {
+     		match.getValue().getYawRadians(temp);
     		return temp.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
     	} else {
     		return Float.NaN;

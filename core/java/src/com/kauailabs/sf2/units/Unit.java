@@ -103,7 +103,7 @@ public class Unit {
 			secondary_units.add(new Feet());
 			secondary_units.add(new Millimeters());
 			secondary_units.add(new Centimeters());
-			return (IUnit[])secondary_units.toArray();
+			return (IUnit[])secondary_units.toArray(new IUnit[secondary_units.size()]);
 		}
 	}
 	
@@ -148,7 +148,7 @@ public class Unit {
 			secondary_units.add(new Degrees());			
 			secondary_units.add(new Compass());
 			secondary_units.add(new Revolutions());
-			return (IUnit[])secondary_units.toArray();
+			return (IUnit[])secondary_units.toArray(new IUnit[secondary_units.size()]);
 		}		
 	}
 	
@@ -191,7 +191,7 @@ public class Unit {
 			ArrayList<IUnit> secondary_units = new ArrayList<IUnit>();
 			secondary_units.add(new Hours());			
 			secondary_units.add(new Minutes());
-			return (IUnit[])secondary_units.toArray();
+			return (IUnit[])secondary_units.toArray(new IUnit[secondary_units.size()]);
 		}		
 	}
 	

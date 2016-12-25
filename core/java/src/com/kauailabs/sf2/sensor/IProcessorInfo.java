@@ -4,5 +4,5 @@ import com.kauailabs.sf2.time.Timestamp;
 
 public interface IProcessorInfo {
 	public String getName();
-	public Timestamp getProcessorTimestamp();
+	public void getProcessorTimestamp(Timestamp out);
 }

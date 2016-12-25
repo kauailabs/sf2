@@ -86,12 +86,17 @@ public class DriveTrainPoseEstimator implements ISensorDataSubscriber {
 		steer_wheel_angle_sensor_timestamp = steer_wheel_angle_sensor_infos[0].getSensorTimestampInfo().getDefaultTimestamp();
 		drive_motor_current_sensor_timestamp = drive_motor_current_sensor_infos[0].getSensorTimestampInfo().getDefaultTimestamp();
 
+		ISensorDataSource[] data_source_array_template = new ISensorDataSource[0];		
+		
 		this.driveWheelDistanceSensors = new ISensorDataSource[drive_wheel_distance_sensor_infos.length];
 		ArrayList<IQuantity[]> drive_wheel_distance_sensor_quantities_array = new ArrayList<IQuantity[]>();
 		for ( int i = 0; i < drive_wheel_distance_sensor_infos.length; i++ ) {
 			this.driveWheelDistanceSensors[i] = drive_wheel_distance_sensor_infos[i].getSensorDataSource();
-			drive_wheel_distance_sensor_quantities_array.add(
-					SensorDataSourceInfo.getQuantityArray(driveWheelDistanceSensors[i].getSensorDataSourceInfos()));
+			ArrayList<SensorDataSourceInfo> sensor_data_source_infos = new ArrayList<SensorDataSourceInfo>();
+			driveWheelDistanceSensors[i].getSensorDataSourceInfos(sensor_data_source_infos);
+			ArrayList<IQuantity> quantity_list = new ArrayList<IQuantity>();
+			SensorDataSourceInfo.getQuantityArray((SensorDataSourceInfo[]) sensor_data_source_infos.toArray(data_source_array_template), quantity_list);
+			drive_wheel_distance_sensor_quantities_array.add((IQuantity[])quantity_list.toArray(new IQuantity[quantity_list.size()]));
 		}
 		drive_wheel_distance_sensor_quantities = 
 			new IQuantity[drive_wheel_distance_sensor_infos.length][drive_wheel_distance_sensor_quantities_array.get(0).length];
@@ -103,8 +108,11 @@ public class DriveTrainPoseEstimator implements ISensorDataSubscriber {
 		ArrayList<IQuantity[]> steer_wheel_angle_sensor_quantities_array = new ArrayList<IQuantity[]>();
 		for ( int i = 0; i < steer_wheel_angle_sensor_infos.length; i++ ) {
 			this.steerWheelAngleSensors[i] = steer_wheel_angle_sensor_infos[i].getSensorDataSource();
-			steer_wheel_angle_sensor_quantities_array.add(
-					SensorDataSourceInfo.getQuantityArray(steerWheelAngleSensors[i].getSensorDataSourceInfos()));
+			ArrayList<SensorDataSourceInfo> sensor_data_source_infos = new ArrayList<SensorDataSourceInfo>();
+			steerWheelAngleSensors[i].getSensorDataSourceInfos(sensor_data_source_infos);
+			ArrayList<IQuantity> quantity_list = new ArrayList<IQuantity>();
+			SensorDataSourceInfo.getQuantityArray((SensorDataSourceInfo[]) sensor_data_source_infos.toArray(data_source_array_template), quantity_list);
+			steer_wheel_angle_sensor_quantities_array.add((IQuantity[])quantity_list.toArray(new IQuantity[quantity_list.size()]));
 		}
 		steer_wheel_angle_sensor_quantities = 
 				new IQuantity[steer_wheel_angle_sensor_infos.length][steer_wheel_angle_sensor_quantities_array.get(0).length];
@@ -116,8 +124,11 @@ public class DriveTrainPoseEstimator implements ISensorDataSubscriber {
 		ArrayList<IQuantity[]> drive_motor_current_sensor_quantities_array = new ArrayList<IQuantity[]>();
 		for ( int i = 0; i < drive_motor_current_sensor_infos.length; i++ ) {
 			this.driveMotorCurrentSensors[i] = drive_motor_current_sensor_infos[i].getSensorDataSource();
-			drive_motor_current_sensor_quantities_array.add(
-					SensorDataSourceInfo.getQuantityArray(driveMotorCurrentSensors[i].getSensorDataSourceInfos()));
+			ArrayList<SensorDataSourceInfo> sensor_data_source_infos = new ArrayList<SensorDataSourceInfo>();
+			driveMotorCurrentSensors[i].getSensorDataSourceInfos(sensor_data_source_infos);
+			ArrayList<IQuantity> quantity_list = new ArrayList<IQuantity>();
+			SensorDataSourceInfo.getQuantityArray((SensorDataSourceInfo[]) sensor_data_source_infos.toArray(data_source_array_template), quantity_list);
+			drive_motor_current_sensor_quantities_array.add((IQuantity[])quantity_list.toArray(new IQuantity[quantity_list.size()]));
 		}
 		drive_motor_current_sensor_quantities = 
 				new IQuantity[drive_motor_current_sensor_infos.length][drive_motor_current_sensor_quantities_array.get(0).length];
@@ -218,7 +229,9 @@ public class DriveTrainPoseEstimator implements ISensorDataSubscriber {
 		if ( pose_history.getValidSampleCount() > 0 ) {
 			TimestampedValue<Pose> tp = new TimestampedValue<Pose>();
 			if (getCurrentPose(tp)) {
-				if ( drive_model.step(	processor_info.getProcessorTimestamp(),
+				Timestamp processor_timestamp = new Timestamp();
+				processor_info.getProcessorTimestamp(processor_timestamp);
+				if ( drive_model.step(	processor_timestamp,
 										tp,  
 										tq, 
 										curr_drive_wheel_distance_delta_inches, 

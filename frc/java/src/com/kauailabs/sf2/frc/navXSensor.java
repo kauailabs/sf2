@@ -66,7 +66,11 @@ public class navXSensor implements
 				new IUnit[]{new Unit().new Angle().new Degrees()}));
 		this.sensor_data_source_infos.add(new SensorDataSourceInfo("Roll", new Scalar(),
 				new IUnit[]{new Unit().new Angle().new Degrees()}));
-		active_sensor_data_quantities = SensorDataSourceInfo.getQuantityArray(getSensorDataSourceInfos());
+		SensorDataSourceInfo[] data_source_infos = 
+			((SensorDataSourceInfo[]) sensor_data_source_infos.toArray(new SensorDataSourceInfo[sensor_data_source_infos.size()]));
+		ArrayList<IQuantity> quantity_list = new ArrayList<IQuantity>();
+		SensorDataSourceInfo.getQuantityArray(data_source_infos,quantity_list);
+		active_sensor_data_quantities = (IQuantity[])quantity_list.toArray(new IQuantity[quantity_list.size()]);
 	}
 	
 	@Override
@@ -106,8 +110,10 @@ public class navXSensor implements
 		synchronized(tsq_subscribers) {
 			curr_data.getValue().set(data.quat_w, data.quat_x, data.quat_y, data.quat_z);
 			curr_data.setTimestamp(sensor_timestamp);	
-			for ( ISensorDataSubscriber subscriber : tsq_subscribers) {				
-				subscriber.publish(active_sensor_data_quantities, roborio.getProcessorTimestamp());
+			for ( ISensorDataSubscriber subscriber : tsq_subscribers) {
+				Timestamp t = new Timestamp();
+				roborio.getProcessorTimestamp(t);
+				subscriber.publish(active_sensor_data_quantities, t);
 			}
 		}
 	}
@@ -129,9 +135,8 @@ public class navXSensor implements
 		return sensor_name;
 	}
 	@Override
-	public SensorDataSourceInfo[] getSensorDataSourceInfos() {
-		SensorDataSourceInfo[] new_array = new SensorDataSourceInfo[sensor_data_source_infos.size()];
-		return sensor_data_source_infos.toArray(new_array);
+	public void getSensorDataSourceInfos(ArrayList<SensorDataSourceInfo> infos) {
+		infos.addAll(sensor_data_source_infos);
 	}
 	@Override
 	public boolean getCurrent(IQuantity[] quantities, Timestamp ts) {

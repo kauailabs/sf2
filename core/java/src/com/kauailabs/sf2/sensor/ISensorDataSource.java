@@ -1,5 +1,7 @@
 package com.kauailabs.sf2.sensor;
 
+import java.util.ArrayList;
+
 import com.kauailabs.sf2.quantity.IQuantity;
 import com.kauailabs.sf2.time.Timestamp;
 
@@ -50,6 +52,6 @@ public interface ISensorDataSource {
 	 */
 	boolean reset(int quantity_index);
 	
-	SensorDataSourceInfo[] getSensorDataSourceInfos();
+	void getSensorDataSourceInfos(ArrayList<SensorDataSourceInfo> out);
 
 }

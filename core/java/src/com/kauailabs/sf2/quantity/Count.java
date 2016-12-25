@@ -1,5 +1,7 @@
 package com.kauailabs.sf2.quantity;
 
+import java.util.ArrayList;
+
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.time.ICopy;
 
@@ -32,7 +34,7 @@ public class Count implements IInterpolate<Count>, ICopy<Count>, IQuantity, IQua
 		printable_string = Long.toString(count);
 	}
 	@Override
-	public void getQuantities(IQuantity[] quantities) {
-		quantities = new IQuantity[] {this};
+	public void getQuantities(ArrayList<IQuantity> quantities) {
+		quantities.add(this);
 	}
 }
