@@ -172,12 +172,12 @@ public class DriveTrainPoseEstimator implements ISensorDataSubscriber {
 		}
 	}
 	
-	public TimestampedValue<Pose> getCurrentPose() {
-		return pose_history.getMostRecent();
+	public boolean getCurrentPose(TimestampedValue<Pose> out) {
+		return pose_history.getMostRecent(out);
 	}
 	
-	public TimestampedValue<Pose> getPoseAtTimestamp(long timestamp) {
-		return pose_history.get(timestamp);
+	public boolean getPoseAtTimestamp(long timestamp, TimestampedValue<Pose> out) {
+		return pose_history.get(timestamp, out);
 	}
 
 	@Override
@@ -216,8 +216,8 @@ public class DriveTrainPoseEstimator implements ISensorDataSubscriber {
 		}
 		
 		if ( pose_history.getValidSampleCount() > 0 ) {
-			TimestampedValue<Pose> tp = getCurrentPose();
-			if ( tp != null ) {
+			TimestampedValue<Pose> tp = new TimestampedValue<Pose>();
+			if (getCurrentPose(tp)) {
 				if ( drive_model.step(	processor_info.getProcessorTimestamp(),
 										tp,  
 										tq, 
