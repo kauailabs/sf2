@@ -22,17 +22,17 @@ public class Count implements IInterpolate<Count>, ICopy<Count>, IQuantity, IQua
 	}
 	@Override
 	/* time_ratio:  interpolation ratio from 0.0 to 1.0. */
-	public Count interpolate(Count to, double time_ratio) {
+	public void interpolate(Count to, double time_ratio, Count out) {
 		long delta = to.count - this.count;
 		long interpolated_value = this.count + delta;
-		return new Count(interpolated_value);
+		out.set(interpolated_value);
 	}
 	@Override
-	public String toPrintableString() {
-		return Long.toString(count);
+	public void getPrintableString(String printable_string) {
+		printable_string = Long.toString(count);
 	}
 	@Override
-	public IQuantity[] getQuantities() {
-		return new IQuantity[] {this};
+	public void getQuantities(IQuantity[] quantities) {
+		quantities = new IQuantity[] {this};
 	}
 }

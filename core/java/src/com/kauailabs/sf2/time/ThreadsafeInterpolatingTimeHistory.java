@@ -104,7 +104,8 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
      * @return - returns the object (either actual or interpolated) matching the requested
      * timestamp.  If no object could be located or interpolated, null is returned.
      */
-    public T get( long requested_timestamp ) {
+    public boolean get( long requested_timestamp, T out ) {
+    	boolean success = false;
     	T match = null;
     	long nearest_preceding_timestamp = Long.MIN_VALUE;
     	long nearest_preceding_timestamp_delta = Long.MIN_VALUE;
@@ -156,32 +157,30 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
 		    	double requested_timestamp_offset = requested_timestamp - nearest_preceding_timestamp;
 		    	double requested_timestamp_ratio = requested_timestamp_offset / timestamp_delta;
 		    	
-		    	match = nearest_preceding_obj.interpolate(nearest_following_obj,
-							requested_timestamp_ratio);    	    	
-		    	match.setInterpolated(true);
+		    	nearest_preceding_obj.interpolate(nearest_following_obj,
+							requested_timestamp_ratio, out);    	    	
+		    	out.setInterpolated(true);
 		    	copy_object = false;
+		    	success = true;
 	    	}
 	    	
 	    	if ( ( match != null ) && copy_object ) {
 	    		/* Make a copy of the object, so that caller does not directly reference
 	    		 * an object within the volatile (threadsafe) history.
 	    		 */
-	    		T new_t = default_obj.instantiate_copy();
-	    		if ( new_t != null ) {
-	    			new_t.copy(match);
-	    			match = new_t;
-	    		}
+	    		out.copy(match);
+	    		success = true;
 	    	}    	
     	}
     	    	
-    	return match;
+    	return success;
     }
     
     /**
      * Retrieves the most recently-added object in the ThreadsafeInterpolatingTimeHistory.
      * @return - the most recently-added object, or null if no valid objects exist
      */
-    public T getMostRecent() {
+    public boolean getMostRecent(T out) {
     	T most_recent_t = null;
     	synchronized(this){
 	    	if ( num_valid_samples > 0 ) {
@@ -204,6 +203,11 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
 				}
 	    	}
     	}
-    	return most_recent_t;    	
+    	if ( most_recent_t != null) {
+    		out.copy(most_recent_t);
+    		return true;
+    	} else {
+    		return false;
+    	}    	
     }
 }

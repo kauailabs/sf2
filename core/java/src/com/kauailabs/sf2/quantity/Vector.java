@@ -3,7 +3,7 @@ package com.kauailabs.sf2.quantity;
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.time.ICopy;
 
-public class Vector implements IInterpolate<Vector>, ICopy<Vector>, IQuantityContainer {
+public class Vector implements IInterpolate<Vector>, ICopy<Vector>, IQuantity, IQuantityContainer {
 	Scalar direction;
 	Scalar magnitude;
 	private Vector()
@@ -27,13 +27,22 @@ public class Vector implements IInterpolate<Vector>, ICopy<Vector>, IQuantityCon
 		return v;
 	}
 	@Override
-	public Vector interpolate(Vector to, double time_ratio) {
+	public void interpolate(Vector to, double time_ratio, Vector out) {
 		Scalar direction = this.direction.instantiate_copy();
 		Scalar magnitude = this.magnitude.instantiate_copy();
-		return new Vector(direction, magnitude);
+		out.direction = direction;
+		out.magnitude = magnitude;
 	}
 	@Override
-	public IQuantity[] getQuantities() {
-		return new IQuantity[] { direction, magnitude };
+	public void getQuantities(IQuantity[] quantities) {
+		quantities = new IQuantity[] { direction, magnitude };
+	}
+	@Override
+	public void getPrintableString(String printable_string) {
+		String direction_printable_string = new String();
+		String magnitude_printable_string = new String();
+		direction.getPrintableString(direction_printable_string);
+		magnitude.getPrintableString(magnitude_printable_string);
+		printable_string = direction + ", " + magnitude;
 	}
 }

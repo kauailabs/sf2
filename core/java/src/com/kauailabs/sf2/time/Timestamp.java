@@ -111,14 +111,14 @@ public class Timestamp implements IQuantity, IQuantityContainer {
 	}
 
 	@Override
-	public IQuantity[] getQuantities() {
-		return new IQuantity[]{
+	public void getQuantities(IQuantity[] quantities) {
+		quantities = new IQuantity[]{
 			new Count(timestamp)
 		};
 	}
 
 	@Override
-	public String toPrintableString() {
-		return Long.toString(timestamp);
+	public void getPrintableString(String printable_string) {
+		printable_string = Long.toString(timestamp);
 	}
 }

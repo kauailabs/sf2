@@ -30,7 +30,7 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantityCo
     private boolean valid;
     private boolean interpolated;
     
-    private TimestampedValue(){
+    public TimestampedValue(){
     	timestamp = 0;
     	valid = false;
     	this.interpolated = false;    	
@@ -129,16 +129,12 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantityCo
 	 * This actual method of interpolation used depends upon the value type (T).
 	 */
 	@Override
-	public TimestampedValue<T> interpolate(TimestampedValue<T> to, double time_ratio) {
+	public void interpolate(TimestampedValue<T> to, double time_ratio, TimestampedValue<T> out) {
 		TimestampedValue<T> from = this;
-		TimestampedValue<T> interpolated = null;
-		T t = this.value.interpolate(to.value,time_ratio);
-		if ( t != null ) {
-			float delta_t = to.getTimestamp() - from.getTimestamp();
-			delta_t *= time_ratio;
-			interpolated = new TimestampedValue<T>( t, from.getTimestamp() + (long)delta_t);
-		}
-		return interpolated;
+		this.value.interpolate(to.value,time_ratio, out.getValue());
+		float delta_t = to.getTimestamp() - from.getTimestamp();
+		delta_t *= time_ratio;
+		out.setTimestamp((long)delta_t);
 	}
 
 	
@@ -181,13 +177,14 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantityCo
 	}
 
 	@Override
-	public IQuantity[] getQuantities() {
-		IQuantity[] value_quantities = this.value.getQuantities();
+	public void getQuantities(IQuantity[] quantities) {
+		IQuantity[] value_quantities = new IQuantity[1];
+		this.value.getQuantities(value_quantities);
 		IQuantity[] timestamped_value_quantities = new IQuantity[value_quantities.length+1];
 		timestamped_value_quantities[0] = new Scalar(timestamp);
 		for ( int i = 0; i < value_quantities.length; i++) {
 			timestamped_value_quantities[i+1] = value_quantities[i];
 		}
-		return value_quantities;
+		quantities = value_quantities;
 	}
 }

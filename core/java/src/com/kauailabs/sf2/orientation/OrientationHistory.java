@@ -94,8 +94,8 @@ public class OrientationHistory implements ISensorDataSubscriber{
 	 * Retrieves the most recently added Quaternion.
 	 * @return
 	 */
-	public TimestampedValue<Quaternion> getCurrentQuaternion() {
-		return orientation_history.getMostRecent();
+	public boolean getCurrentQuaternion(TimestampedValue<Quaternion> out) {
+		return orientation_history.getMostRecent(out);
 	}
 	
 	/**
@@ -108,8 +108,8 @@ public class OrientationHistory implements ISensorDataSubscriber{
 	 * @param requested_timestamp - sensor timestamp to retrieve 
 	 * @return TimestampedQuaternion at requested timestamp, or null.
 	 */
-	public TimestampedValue<Quaternion> getQuaternionAtTime(long requested_timestamp) {
-		return orientation_history.get(requested_timestamp);
+	public boolean getQuaternionAtTime(long requested_timestamp, TimestampedValue<Quaternion> out) {
+		return orientation_history.get(requested_timestamp, out);
 	}
 	
 	/**
@@ -122,7 +122,8 @@ public class OrientationHistory implements ISensorDataSubscriber{
 	 * value INVALID_ANGLE (NaN) will be returned.
 	 */
     public float getYawDegreesAtTime( long requested_timestamp ) {
-    	TimestampedValue<Quaternion> match = getQuaternionAtTime( requested_timestamp );
+    	TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
+    	getQuaternionAtTime( requested_timestamp, match );
     	if ( match != null ) {
     		match.getValue().getYawRadians(temp);
     		return temp.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
@@ -141,10 +142,10 @@ public class OrientationHistory implements ISensorDataSubscriber{
 	 * value INVALID_ANGLE (NaN) will be returned.
 	 */
     public float getPitchDegreesAtTime( long requested_timestamp ) {
-    	TimestampedValue<Quaternion> match = getQuaternionAtTime( requested_timestamp );
-    	if ( match != null ) {
+    	TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
+    	if(getQuaternionAtTime( requested_timestamp, match )){
     		match.getValue().getPitch(temp);
-    		return temp.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
+			return temp.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
     	} else {
     		return Float.NaN;
     	}
@@ -160,8 +161,8 @@ public class OrientationHistory implements ISensorDataSubscriber{
 	 * value INVALID_ANGLE (NaN) will be returned.
 	 */
     public float getRollDegreesAtTime( long requested_timestamp ) {
-    	TimestampedValue<Quaternion> match = getQuaternionAtTime( requested_timestamp );
-    	if ( match != null ) {
+    	TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
+    	if(getQuaternionAtTime( requested_timestamp, match )) {
     		match.getValue().getRoll(temp);
     		return temp.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
     	} else {

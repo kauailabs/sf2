@@ -22,17 +22,17 @@ public class Scalar implements IInterpolate<Scalar>, ICopy<Scalar>, IQuantity, I
 	}
 	@Override
 	/* time_ratio:  interpolation ratio from 0.0 to 1.0. */
-	public Scalar interpolate(Scalar to, double time_ratio) {
+	public void interpolate(Scalar to, double time_ratio, Scalar out) {
 		float delta = to.value - this.value;
 		float interpolated_value = this.value + delta;
-		return new Scalar(interpolated_value);
+		out.set(interpolated_value);
 	}
 	@Override
-	public String toPrintableString() {
-		return Float.toString(value);
+	public void getPrintableString(String printable_string) {
+		printable_string = Float.toString(value);
 	}
 	@Override
-	public IQuantity[] getQuantities() {
-		return new IQuantity[] {this};
+	public void getQuantities(IQuantity[] quantities) {
+		quantities = new IQuantity[] {this};
 	}
 }

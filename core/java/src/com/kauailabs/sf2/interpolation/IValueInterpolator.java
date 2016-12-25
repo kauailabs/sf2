@@ -21,7 +21,7 @@ public interface IValueInterpolator<T> {
 	 * @return a new object of type T whose value and timestamp are interpolated
 	 * by this method.
 	 */
-	public T interpolate(T to, double time_ratio);
+	public void interpolate(T to, double time_ratio, T out);
 	    
 	/**
 	 * Indicates whether this object represents an actual (measured) value/timestamp,

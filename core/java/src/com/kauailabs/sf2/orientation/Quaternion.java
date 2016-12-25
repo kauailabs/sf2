@@ -193,18 +193,16 @@ public class Quaternion implements IInterpolate<Quaternion>, ICopy<Quaternion>, 
      * 
      * http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/index.htm
      */
-    public static Quaternion slerp(final Quaternion qa, final Quaternion qb, double t) {
-    	// quaternion to return
-    	Quaternion qm = new Quaternion();
+    public static void slerp(final Quaternion qa, final Quaternion qb, double t, Quaternion out) {
     	// Calculate angle between them.
     	double cosHalfTheta = qa.w * qb.w + qa.x * qb.x + qa.y * qb.y + qa.z * qb.z;
     	// if qa=qb or qa=-qb then theta = 0 and we can return qa
     	if (Math.abs(cosHalfTheta) >= 1.0){
-    		qm.w = qa.w;
-    		qm.x = qa.x;
-    		qm.y = qa.y;
-    		qm.z = qa.z;
-    		return qm;
+    		out.w = qa.w;
+    		out.x = qa.x;
+    		out.y = qa.y;
+    		out.z = qa.z;
+    		return;
     	}
     	// Calculate temporary values.
     	double halfTheta = Math.acos(cosHalfTheta);
@@ -212,20 +210,20 @@ public class Quaternion implements IInterpolate<Quaternion>, ICopy<Quaternion>, 
     	// if theta = 180 degrees then result is not fully defined
     	// we could rotate around any axis normal to qa or qb
     	if (Math.abs(sinHalfTheta) < 0.001){ 
-    		qm.w = (qa.w * 0.5f + qb.w * 0.5f);
-    		qm.x = (qa.x * 0.5f + qb.x * 0.5f);
-    		qm.y = (qa.y * 0.5f + qb.y * 0.5f);
-    		qm.z = (qa.z * 0.5f + qb.z * 0.5f);
-    		return qm;
+    		out.w = (qa.w * 0.5f + qb.w * 0.5f);
+    		out.x = (qa.x * 0.5f + qb.x * 0.5f);
+    		out.y = (qa.y * 0.5f + qb.y * 0.5f);
+    		out.z = (qa.z * 0.5f + qb.z * 0.5f);
+    		return;
     	}
     	float ratioA = (float)(Math.sin((1 - t) * halfTheta) / sinHalfTheta);
     	float ratioB = (float)(Math.sin(t * halfTheta) / sinHalfTheta); 
     	//calculate Quaternion.
-    	qm.w = (qa.w * ratioA + qb.w * ratioB);
-    	qm.x = (qa.x * ratioA + qb.x * ratioB);
-    	qm.y = (qa.y * ratioA + qb.y * ratioB);
-    	qm.z = (qa.z * ratioA + qb.z * ratioB);
-    	return qm;
+    	out.w = (qa.w * ratioA + qb.w * ratioB);
+    	out.x = (qa.x * ratioA + qb.x * ratioB);
+    	out.y = (qa.y * ratioA + qb.y * ratioB);
+    	out.z = (qa.z * ratioA + qb.z * ratioB);
+    	return;
     }    
     
     /**
@@ -338,8 +336,8 @@ public class Quaternion implements IInterpolate<Quaternion>, ICopy<Quaternion>, 
     public float getZ() { return z; }
 
 	@Override
-	public Quaternion interpolate(Quaternion to, double time_ratio) {
-		return Quaternion.slerp(this, to, time_ratio);
+	public void interpolate(Quaternion to, double time_ratio, Quaternion out) {
+		Quaternion.slerp(this, to, time_ratio, out);
 	}
 
 	@Override
@@ -356,8 +354,8 @@ public class Quaternion implements IInterpolate<Quaternion>, ICopy<Quaternion>, 
 	}
 
 	@Override
-	public IQuantity[] getQuantities() {
-		return new IQuantity[] {
+	public void getQuantities(IQuantity[] quantities) {
+		quantities = new IQuantity[] {
 			new Scalar(w), 
 			new Scalar(x), 
 			new Scalar(y), 
@@ -365,8 +363,8 @@ public class Quaternion implements IInterpolate<Quaternion>, ICopy<Quaternion>, 
 		};
 	}
 	
-	static public IUnit[] getUnits() {
-		return new IUnit[] {
+	static public void getUnits(IUnit[] units) {
+		units = new IUnit[] {
 			new Unit().new Unitless(),			
 			new Unit().new Unitless(),			
 			new Unit().new Unitless(),			
@@ -375,7 +373,7 @@ public class Quaternion implements IInterpolate<Quaternion>, ICopy<Quaternion>, 
 	}
 
 	@Override
-	public String toPrintableString() {
-		return Float.toString(w) + ", " + Float.toString(x) + ", " + Float.toString(y) + ", " + Float.toString(z);
+	public void getPrintableString(String printable_string) {
+		printable_string = Float.toString(w) + ", " + Float.toString(x) + ", " + Float.toString(y) + ", " + Float.toString(z);
 	}
 }

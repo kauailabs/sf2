@@ -8,7 +8,6 @@ import com.kauailabs.sf2.quantity.Scalar;
 import com.kauailabs.sf2.time.ICopy;
 import com.kauailabs.sf2.units.Unit;
 import com.kauailabs.sf2.units.Unit.IUnit;
-import com.kauailabs.sf2.units.Unit.Unitless;
 
 /**
  * The Pose class represents a 2-dimensional position, and a 
@@ -64,24 +63,18 @@ public class Pose implements IInterpolate<Pose>, ICopy<Pose>, IQuantity, IQuanti
    /* Estimates an intermediate Pose given Poses representing each end of the path,
     * and an interpolation (time) ratio from 0.0 t0 1.0. */
 	
-	public static Pose interpolate( Pose from, Pose to, double t) {
+	public static void interpolate( Pose from, Pose to, double t, Pose out) {
 		Pose interp_pose = null;
 		/* First, interpolate the aggregate Quaternion */
-		Quaternion interp_quat = from.quat.interpolate(to.quat, t);
-		if ( interp_quat != null ) {
-			interp_pose = new Pose(interp_quat);
+		from.quat.interpolate(to.quat, t, out.quat);
+		/* Interpolate the X and Y offsets */
+		float x_offset_delta = to.x_offset_inches - from.x_offset_inches;
+		x_offset_delta *= t;
+		out.x_offset_inches = from.x_offset_inches + x_offset_delta;
 
-			/* Interpolate the X and Y offsets */
-			float x_offset_delta = to.x_offset_inches - from.x_offset_inches;
-			x_offset_delta *= t;
-			interp_pose.x_offset_inches = from.x_offset_inches + x_offset_delta;
-
-			float y_offset_delta = to.y_offset_inches - from.y_offset_inches;
-			y_offset_delta *= t;
-			interp_pose.y_offset_inches = from.y_offset_inches + y_offset_delta;
-		}
-		
-		return interp_pose;
+		float y_offset_delta = to.y_offset_inches - from.y_offset_inches;
+		y_offset_delta *= t;
+		out.y_offset_inches = from.y_offset_inches + y_offset_delta;
 	}
 	
 	public double getOffsetInchesX() {
@@ -98,8 +91,8 @@ public class Pose implements IInterpolate<Pose>, ICopy<Pose>, IQuantity, IQuanti
 	}
 
 	@Override
-	public Pose interpolate(Pose to, double time_ratio) {
-		return Pose.interpolate(this, to, time_ratio);
+	public void interpolate(Pose to, double time_ratio, Pose out) {
+		interpolate(this, to, time_ratio, out);
 	}
 	
 	@Override
@@ -110,8 +103,8 @@ public class Pose implements IInterpolate<Pose>, ICopy<Pose>, IQuantity, IQuanti
 	}
 
 	@Override
-	public IQuantity[] getQuantities() {
-		return new IQuantity[] {
+	public void getQuantities(IQuantity[] quantities) {
+		quantities = new IQuantity[] {
 			new Scalar(x_offset_inches),
 			new Scalar(y_offset_inches),
 			new Scalar(quat.getW()),
@@ -120,8 +113,8 @@ public class Pose implements IInterpolate<Pose>, ICopy<Pose>, IQuantity, IQuanti
 			new Scalar(quat.getZ())
 		};
 	}
-	static public IUnit[] getUnits() {
-		return new IUnit[] {
+	static public void getUnits(IUnit[] units) {
+		units = new IUnit[] {
 			new Unit().new Distance().new Inches(),
 			new Unit().new Distance().new Inches(),
 			new Unit().new Unitless(),			
@@ -132,7 +125,9 @@ public class Pose implements IInterpolate<Pose>, ICopy<Pose>, IQuantity, IQuanti
 	}
 
 	@Override
-	public String toPrintableString() {
-		return Float.toString(x_offset_inches) + ", " + Float.toString(y_offset_inches) + ", " + quat.toPrintableString();
+	public void getPrintableString(String printable_string) {
+		String quat_printable_string = new String();
+		quat.getPrintableString(quat_printable_string);
+		printable_string = Float.toString(x_offset_inches) + ", " + Float.toString(y_offset_inches) + ", " + quat_printable_string;
 	}	
 }
