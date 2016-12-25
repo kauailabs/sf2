@@ -2,16 +2,16 @@ package com.kauailabs.sf2.frc;
 
 import com.kauailabs.sf2.sensor.IDriveMotorCurrentSensor;
 
-import edu.wpi.first.wpilibj.CANJaguar;
-import edu.wpi.first.wpilibj.CANTalon;
+//import edu.wpi.first.wpilibj.CANJaguar;
+//import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
 
 public class DriveMotorCurrentSensor implements IDriveMotorCurrentSensor {
 
 	PowerDistributionPanel pdp;
 	int pdp_channel;
-	CANTalon talon;
-	CANJaguar jaguar;
+	//CANTalon talon;
+	//CANJaguar jaguar;
 	public enum SensorType { PowerDistributionPanel, CANTalon, CANJaguar };	
 	SensorType type;
 	
@@ -21,6 +21,7 @@ public class DriveMotorCurrentSensor implements IDriveMotorCurrentSensor {
 		this.pdp_channel = channel;
 	}
 	
+	/*
 	public DriveMotorCurrentSensor(CANTalon talon) {
 		this.type = SensorType.CANTalon;
 		this.talon = talon;
@@ -29,17 +30,18 @@ public class DriveMotorCurrentSensor implements IDriveMotorCurrentSensor {
 	public DriveMotorCurrentSensor(CANJaguar jaguar) {
 		this.type = SensorType.CANTalon;
 		this.jaguar = jaguar;
-	}	
+	}
+	*/	
 
 	@Override
 	public double getCurrentAmps() {
 		switch(type) {
 		case PowerDistributionPanel:
 			return pdp.getCurrent(pdp_channel);
-		case CANTalon:
-			return talon.getOutputCurrent();
-		case CANJaguar:
-			return jaguar.getOutputCurrent();
+		//case CANTalon:
+		//	return talon.getOutputCurrent();
+		//case CANJaguar:
+		//	return jaguar.getOutputCurrent();
 		default:
 			return 0;
 		}

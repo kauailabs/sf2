@@ -2,8 +2,8 @@ package com.kauailabs.sf2.frc;
 
 import com.kauailabs.sf2.sensor.IWheelVelocitySensor;
 
-import edu.wpi.first.wpilibj.CANJaguar;
-import edu.wpi.first.wpilibj.CANTalon;
+//import edu.wpi.first.wpilibj.CANJaguar;
+//import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Encoder;
 
 public class WheelVelocitySensor implements IWheelVelocitySensor {
@@ -11,8 +11,8 @@ public class WheelVelocitySensor implements IWheelVelocitySensor {
 	EncoderType type;
 
 	Encoder encoder;
-	CANTalon talon_srx;
-	CANJaguar jaguar;
+	//CANTalon talon_srx;
+	//CANJaguar jaguar;
 	
 	int positions_per_wheel_revolution;
 	double wheel_diameter_inches;
@@ -69,6 +69,7 @@ public class WheelVelocitySensor implements IWheelVelocitySensor {
 	 * CANTalon talon; // Construct CANTalon
 	 *  WPILibEncoder wle = new WPILibEncoder( talon, ticks_per_count, counts_per_rev * gear_ratio, wheel_diamater_inches);
 	 */
+	/*
 	public WheelVelocitySensor( CANTalon t, int ticks_per_count, int positions_per_wheel_revolution, double wheel_diameter_inches ) {
 		type = EncoderType.CANTalon;
 		this.talon_srx = t;
@@ -76,7 +77,7 @@ public class WheelVelocitySensor implements IWheelVelocitySensor {
 		this.wheel_diameter_inches = wheel_diameter_inches;
 		this.ticks_per_count = ticks_per_count;
 	}
-	
+	*/
 	/* The provided CANJaguar object must be correctly configured to calculate distance
 	 * in inches using a sensor input, as shown in the following examples:
 	 * 
@@ -102,11 +103,12 @@ public class WheelVelocitySensor implements IWheelVelocitySensor {
 	 * jaguar.configEncoderCodesPerRev(counts_per_rev * gear_ratio);
 	 * WPILibEncoder wle = new WPILibEncoder(jaguar, wheel_diameter_inches);
 	 */
-
+	/*
 	public WheelVelocitySensor( CANJaguar j ) {
 		type = EncoderType.CANJaguar;
 		this.jaguar = j;		
 	}
+	*/
 	@Override
 	public void reset() {
 	}
@@ -117,16 +119,17 @@ public class WheelVelocitySensor implements IWheelVelocitySensor {
 		case WPIEncoder:
 			/* Encoder positions are in distance units, based on configuration */
 			return this.encoder.getDistance();
+		/*
 		case CANTalon:
-			/* Talon Positions are in units of raw quadrature "ticks".  Thus, to convert to
-			 * distance, the ticks_per_count and "distance per count" must be provided.
-			 */
+			// Talon Positions are in units of raw quadrature "ticks".  Thus, to convert to
+			// distance, the ticks_per_count and "distance per count" must be provided.
 			double counts = this.talon_srx.getEncPosition() / ticks_per_count;
 			double distance = (wheel_diameter_inches / positions_per_wheel_revolution) * counts;
 			return distance;
 		case CANJaguar:
-			/* Jaguar positions are in distance units, based on configuration */
+			//Jaguar positions are in distance units, based on configuration
 			return this.jaguar.getPosition();
+		*/
 		default:
 			return 0;
 		}
