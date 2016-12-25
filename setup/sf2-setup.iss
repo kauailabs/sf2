@@ -48,6 +48,8 @@ Source: "..\frc\java\src\docs\*.*"; DestDir: "{%HOMEPATH}\sf2\java\javadoc\frc";
 
 Source: "..\core\LabVIEW\*.*"; DestDir: "{%HOMEPATH}\sf2\labview"; Flags: recursesubdirs
 Source: "..\frc\LabVIEW\*.*"; DestDir: "{%HOMEPATH}\sf2\labview"; Flags: recursesubdirs
+Source: "..\core\LabVIEW\*.*"; DestDir: "{code:GetLabVIEWDirName}vi.lib\Rock Robotics\WPI\ThirdParty\sensors\SF2"; Flags: createallsubdirs recursesubdirs
+Source: "..\frc\LabVIEW\*.*"; DestDir: "{code:GetLabVIEWDirName}vi.lib\Rock Robotics\WPI\ThirdParty\sensors\SF2"; Flags: createallsubdirs recursesubdirs
 
 ;Source: "..\roborio\java\navx_frc\src\com\*.*"; DestDir: "{%HOMEPATH}\navx-mxp\java\src\com"; Flags: recursesubdirs
 ;Source: "..\roborio\java\navx_frc\src\docs\*.*"; DestDir: "{%HOMEPATH}\navx-mxp\java\docs"; Flags: recursesubdirs
@@ -63,4 +65,19 @@ Source: "..\frc\LabVIEW\*.*"; DestDir: "{%HOMEPATH}\sf2\labview"; Flags: recurse
 [Dirs]
 Name: "{app}\Tools"; Flags: uninsalwaysuninstall
 Name: "{app}\installers"
+
+[Code]
+
+function GetLabVIEWDirName(Value: string): string;
+var          
+  InstallPath: string;
+begin
+  // initialize default path, which will be returned when the following registry
+  // key queries fail due to missing keys or for some different reason
+  Result := 'C:\Program Files (x86)\National Instruments\LabVIEW 2016\';
+  // query the first registry value; if this succeeds, return the obtained value
+  if RegQueryStringValue(HKLM, 'Software\National Instruments\LabVIEW\Current Version', 'Path', InstallPath) then
+    Result := InstallPath;
+end;
+
 
