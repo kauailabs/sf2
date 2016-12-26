@@ -14,7 +14,6 @@ import java.util.ArrayList;
 
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.quantity.IQuantity;
-import com.kauailabs.sf2.quantity.IQuantityContainer;
 import com.kauailabs.sf2.quantity.Scalar;
 import com.kauailabs.sf2.time.ICopy;
 import com.kauailabs.sf2.units.Unit;
@@ -50,7 +49,7 @@ import com.kauailabs.sf2.units.Unit.IUnit;
  * @author Scott
  */
 
-public class Quaternion implements IInterpolate<Quaternion>, ICopy<Quaternion>, IQuantity, IQuantityContainer {
+public class Quaternion implements IInterpolate<Quaternion>, ICopy<Quaternion>, IQuantity {
 
     private float w;
     private float x;
@@ -354,14 +353,6 @@ public class Quaternion implements IInterpolate<Quaternion>, ICopy<Quaternion>, 
 		return new Quaternion(this);
 	}
 
-	@Override
-	public void getQuantities(ArrayList<IQuantity> quantities) {
-		quantities.add(new Scalar(w));
-		quantities.add(new Scalar(x));
-		quantities.add(new Scalar(y));
-		quantities.add(new Scalar(z));
-	}
-	
 	static public IUnit[] getUnits() {
 		return new IUnit[] {
 			new Unit().new Unitless(),			
@@ -372,7 +363,25 @@ public class Quaternion implements IInterpolate<Quaternion>, ICopy<Quaternion>, 
 	}
 
 	@Override
-	public void getPrintableString(String printable_string) {
-		printable_string = Float.toString(w) + ", " + Float.toString(x) + ", " + Float.toString(y) + ", " + Float.toString(z);
+	public boolean getPrintableString(String printable_string) {
+		return false;
+	}
+
+	@Override
+	public boolean getContainedQuantities(ArrayList<IQuantity> quantities) {
+		quantities.add(new Scalar(w));
+		quantities.add(new Scalar(x));
+		quantities.add(new Scalar(y));
+		quantities.add(new Scalar(z));
+		return true;
+	}
+
+	@Override
+	public boolean getContainedQuantityNames(ArrayList<String> quantity_names) {
+		quantity_names.add("W");
+		quantity_names.add("X");
+		quantity_names.add("Y");
+		quantity_names.add("Z");
+		return true;
 	}
 }

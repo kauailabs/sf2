@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.time.ICopy;
 
-public class Vector implements IInterpolate<Vector>, ICopy<Vector>, IQuantity, IQuantityContainer {
+public class Vector implements IInterpolate<Vector>, ICopy<Vector>, IQuantity {
 	Scalar direction;
 	Scalar magnitude;
 	private Vector()
@@ -36,16 +36,20 @@ public class Vector implements IInterpolate<Vector>, ICopy<Vector>, IQuantity, I
 		out.magnitude = magnitude;
 	}
 	@Override
-	public void getQuantities(ArrayList<IQuantity> quantities) {
-		direction.getQuantities(quantities);
-		magnitude.getQuantities(quantities);
+	public boolean getPrintableString(String printable_string) {
+		return false;
+	}
+
+	@Override
+	public boolean getContainedQuantities(ArrayList<IQuantity> quantities) {
+		quantities.add(direction);
+		quantities.add(magnitude);
+		return true;
 	}
 	@Override
-	public void getPrintableString(String printable_string) {
-		String direction_printable_string = new String();
-		String magnitude_printable_string = new String();
-		direction.getPrintableString(direction_printable_string);
-		magnitude.getPrintableString(magnitude_printable_string);
-		printable_string = direction + ", " + magnitude;
+	public boolean getContainedQuantityNames(ArrayList<String> quantity_names) {
+		quantity_names.add("Direction");
+		quantity_names.add("Magnitude");
+		return true;
 	}
 }

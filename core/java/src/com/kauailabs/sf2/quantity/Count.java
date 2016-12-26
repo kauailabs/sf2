@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.time.ICopy;
 
-public class Count implements IInterpolate<Count>, ICopy<Count>, IQuantity, IQuantityContainer {
+public class Count implements IInterpolate<Count>, ICopy<Count>, IQuantity {
 	long count;
 	public long get() { return count; }
 	public void set(long value) { count = value; }
@@ -30,11 +30,16 @@ public class Count implements IInterpolate<Count>, ICopy<Count>, IQuantity, IQua
 		out.set(interpolated_value);
 	}
 	@Override
-	public void getPrintableString(String printable_string) {
+	public boolean getPrintableString(String printable_string) {
 		printable_string = Long.toString(count);
+		return true;
 	}
 	@Override
-	public void getQuantities(ArrayList<IQuantity> quantities) {
-		quantities.add(this);
+	public boolean getContainedQuantities(ArrayList<IQuantity> quantities) {
+		return false;
 	}
+	@Override
+	public boolean getContainedQuantityNames(ArrayList<String> quantity_names) {
+		return false;
+	}	
 }

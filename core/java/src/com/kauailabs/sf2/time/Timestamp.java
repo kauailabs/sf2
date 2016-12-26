@@ -4,9 +4,8 @@ import java.util.ArrayList;
 
 import com.kauailabs.sf2.quantity.Count;
 import com.kauailabs.sf2.quantity.IQuantity;
-import com.kauailabs.sf2.quantity.IQuantityContainer;
 
-public class Timestamp implements IQuantity, IQuantityContainer {
+public class Timestamp implements IQuantity {
 
 	public enum TimestampResolution { Second, Millisecond, Microsecond, Nanosecond };
 	long timestamp;
@@ -126,12 +125,18 @@ public class Timestamp implements IQuantity, IQuantityContainer {
 	}
 
 	@Override
-	public void getQuantities(ArrayList<IQuantity> quantities) {
-		quantities.add(new Count(timestamp));
+	public boolean getPrintableString(String printable_string) {
+		printable_string = Long.toString(timestamp);
+		return true;
 	}
 
 	@Override
-	public void getPrintableString(String printable_string) {
-		printable_string = Long.toString(timestamp);
+	public boolean getContainedQuantities(ArrayList<IQuantity> quantities) {
+		return false;
+	}
+
+	@Override
+	public boolean getContainedQuantityNames(ArrayList<String> quantity_names) {
+		return false;
 	}
 }

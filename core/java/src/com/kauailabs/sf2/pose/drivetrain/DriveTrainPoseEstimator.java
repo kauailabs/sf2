@@ -166,7 +166,7 @@ public class DriveTrainPoseEstimator implements ISensorDataSubscriber {
 		Pose default_pose = new Pose();
 		TimestampedValue<Pose> default_ts_pose = new TimestampedValue<Pose>(default_pose);
 		this.pose_history = new ThreadsafeInterpolatingTimeHistory<TimestampedValue<Pose>>(
-				default_ts_pose, history_length_num_samples,quat_sensor_ts_info);
+				default_ts_pose, history_length_num_samples,quat_sensor_ts_info, "Pose", Pose.getUnits());
 		this.drive_model = drive_model;
 		
 		this.quat_sensor.subscribe(this);				

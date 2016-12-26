@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.time.ICopy;
 
-public class Boolean implements IInterpolate<Boolean>, ICopy<Boolean>, IQuantity, IQuantityContainer {
+public class Boolean implements IInterpolate<Boolean>, ICopy<Boolean>, IQuantity {
 	boolean value;
 	public boolean get() { return value; }
 	public void set(boolean value) { this.value = value; }
@@ -28,11 +28,16 @@ public class Boolean implements IInterpolate<Boolean>, ICopy<Boolean>, IQuantity
 		out.set((time_ratio >= 0.5) ? to.value : this.value);
 	}
 	@Override
-	public void getPrintableString(String printable_string) {
+	public boolean getPrintableString(String printable_string) {
 		printable_string = value ? "True" : "False";
+		return true;
 	}
 	@Override
-	public void getQuantities(ArrayList<IQuantity> quantities) {
-		quantities.add(this);
+	public boolean getContainedQuantities(ArrayList<IQuantity> quantities) {
+		return false;
+	}
+	@Override
+	public boolean getContainedQuantityNames(ArrayList<String> quantity_names) {
+		return false;
 	}
 }

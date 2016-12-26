@@ -1,8 +1,14 @@
 package com.kauailabs.sf2.time;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import com.kauailabs.sf2.interpolation.IValueInterpolator;
+import com.kauailabs.sf2.quantity.IQuantity;
+import com.kauailabs.sf2.units.Unit.IUnit;
 
 /**
  * The ThreadsafeInterpolatingTimeHistory class implements an array of
@@ -29,6 +35,8 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
     int num_valid_samples;
     T default_obj;
     TimestampInfo ts_info;
+    String value_name;
+    IUnit[] value_units;
 
     /**
      * Constructs a ThreadsafeInterpolatingTimeHihstory to hold up to a specified number of 
@@ -37,7 +45,8 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
      * @param num_samples - the maximum number of objects to be contained.
      */
     
-    public ThreadsafeInterpolatingTimeHistory (T default_obj, int num_samples, TimestampInfo ts_info) {
+    public ThreadsafeInterpolatingTimeHistory (T default_obj, int num_samples, TimestampInfo ts_info,
+    		String name, IUnit[] units) {
     	history_size = num_samples;
     	history = new ArrayList<T>(num_samples);
     	
@@ -209,5 +218,118 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
     	} else {
     		return false;
     	}    	
+    }
+    
+    public boolean writeToDiskInDirectory(String directory) {
+    	
+    	File dir = new File(directory);
+    	if (!dir.isDirectory() || !dir.canWrite()) {
+    		System.out.println("Directory parameter '" + dir + "' must be a writable directory.");
+    		return false;
+    	}
+    	
+    	if ((directory.charAt(directory.length()-1) != '/') &&
+    	    (directory.charAt(directory.length()-1) != '\\')) {
+    		directory += File.separatorChar;
+    	}
+    			
+    	String filename_prefix = value_name + "History";
+    	String filename_suffix = "csv";
+    	
+    	File f = new File(directory);
+    	File[] matching_files = f.listFiles(new FilenameFilter() {
+    	    public boolean accept(File dir, String name) {
+    	        return name.startsWith(filename_prefix) && name.endsWith(filename_suffix);
+    	    }
+    	});
+    	
+    	int next_available_index = -1;
+    	
+    	for ( File matching_file : matching_files ) {
+    		String file_name = matching_file.getName();
+    		String file_name_prefix = file_name.replaceFirst("[.][^.]+$", "");
+    		String file_counter = file_name_prefix.substring(filename_prefix.length());
+    		Integer counter = Integer.decode(file_counter);
+    		if ( counter.intValue() > next_available_index) {
+    			next_available_index = counter.intValue();
+    		}
+    	}
+    	
+    	next_available_index++;
+    	
+    	String new_filename = filename_prefix + Integer.toString(next_available_index);
+    	return writeToDiskFile(directory + new_filename);
+    }
+    
+    public boolean writeToDiskFile(String file_path) {
+    	try {
+			PrintWriter out = new PrintWriter(file_path);
+			return writeToDiskInternal(out);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		}
+    }
+    
+    private boolean writeToDiskInternal(PrintWriter out) {
+    	boolean success = true;
+    	// Write header
+    	int oldest_index;
+    	int num_to_write;
+    	if ( num_valid_samples > 0 ) {
+    		if ( num_valid_samples == history_size ) {
+    			oldest_index = curr_index + 1;
+    			if ( oldest_index >= history_size) {
+    	    		oldest_index = 0;
+    	    	}
+    			num_to_write = num_valid_samples;
+    		} else { /* List is not completely filled */
+    			oldest_index = 0;
+    			num_to_write = curr_index + 1;
+    		}
+    		T first_entry = history.get(oldest_index);
+			ArrayList<String> quantity_names = new ArrayList<String>();
+			IQuantity quantity = first_entry.getQuantity();
+			boolean is_quantity_container = quantity.getContainedQuantityNames(quantity_names);
+    		/* Write Header */
+    		String header = "Timestamp";
+    		if (is_quantity_container) {
+    			for (String quantity_name : quantity_names) {
+    				header += "," + quantity_name;
+    			}
+    		} else {
+				header += "," + value_name;
+    		}
+    		out.println(header);
+    		
+    		String value_string = "";
+    		String printable_string = "";
+    		for ( int i = 0; i < num_to_write; i++) {
+    			T entry_to_write = history.get(oldest_index++);
+        		if (is_quantity_container) {
+        			ArrayList<IQuantity> contained_quantities = new ArrayList<IQuantity>();
+        			quantity.getContainedQuantities(contained_quantities);
+        			int index = 0;
+        			for (IQuantity contained_quantity : contained_quantities) {
+        				if ( index++ != 0) {
+        					value_string += ",";
+        				}
+        				quantity.getPrintableString(printable_string);
+        				value_string += printable_string;
+        			}
+        		} else {
+        			quantity.getPrintableString(printable_string);
+        			value_string = printable_string; 
+        		}
+        		out.println(value_string);
+    			if ( oldest_index >= history_size) {
+					oldest_index = 0;
+				}
+    			if ( oldest_index == curr_index ) {
+    				break;
+    			}
+    		}
+    	}
+    	return success;
     }
 }

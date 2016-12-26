@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.orientation.Quaternion;
 import com.kauailabs.sf2.quantity.IQuantity;
-import com.kauailabs.sf2.quantity.IQuantityContainer;
 import com.kauailabs.sf2.quantity.Scalar;
 import com.kauailabs.sf2.time.ICopy;
 import com.kauailabs.sf2.units.Unit;
@@ -25,7 +24,7 @@ import com.kauailabs.sf2.units.Unit.IUnit;
  * @author Scott
  */
 
-public class Pose implements IInterpolate<Pose>, ICopy<Pose>, IQuantity, IQuantityContainer {	
+public class Pose implements IInterpolate<Pose>, ICopy<Pose>, IQuantity {	
 	
 	float x_offset_inches;
 	float y_offset_inches;
@@ -105,10 +104,11 @@ public class Pose implements IInterpolate<Pose>, ICopy<Pose>, IQuantity, IQuanti
 	}
 
 	@Override
-	public void getQuantities(ArrayList<IQuantity> quantities) {
+	public boolean getContainedQuantities(ArrayList<IQuantity> quantities) {
 		quantities.add(new Scalar(x_offset_inches));
 		quantities.add(new Scalar(y_offset_inches));
-		quat.getQuantities(quantities);
+		quat.getContainedQuantities(quantities);
+		return true;
 	}
 	static public IUnit[] getUnits() {
 		return new IUnit[] {
@@ -122,9 +122,15 @@ public class Pose implements IInterpolate<Pose>, ICopy<Pose>, IQuantity, IQuanti
 	}
 
 	@Override
-	public void getPrintableString(String printable_string) {
-		String quat_printable_string = new String();
-		quat.getPrintableString(quat_printable_string);
-		printable_string = Float.toString(x_offset_inches) + ", " + Float.toString(y_offset_inches) + ", " + quat_printable_string;
-	}	
+	public boolean getContainedQuantityNames(ArrayList<String> quantity_names) {
+		quantity_names.add("OffsetX");
+		quantity_names.add("OffsetY");
+		quat.getContainedQuantityNames(quantity_names);
+		return true;
+	}
+
+	@Override
+	public boolean getPrintableString(String printable_string) {
+		return false;
+	}
 }

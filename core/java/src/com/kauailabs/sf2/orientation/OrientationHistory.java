@@ -79,7 +79,9 @@ public class OrientationHistory implements ISensorDataSubscriber{
 		Quaternion default_quat = new Quaternion();
 		TimestampedValue<Quaternion> default_ts_quat = new TimestampedValue<Quaternion>(default_quat);
 		this.orientation_history = new ThreadsafeInterpolatingTimeHistory<TimestampedValue<Quaternion>>(
-				default_ts_quat, history_length_num_samples,quat_sensor.getSensorTimestampInfo());
+				default_ts_quat, history_length_num_samples,quat_sensor.getSensorTimestampInfo(),
+				sensor_data_source_infos.get(quaternion_quantity_index).getName(),
+				sensor_data_source_infos.get(quaternion_quantity_index).getQuantityUnits());
 
 		this.quat_sensor.subscribe(this);		
 		

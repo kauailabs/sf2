@@ -1,5 +1,7 @@
 package com.kauailabs.sf2.time;
 
+import com.kauailabs.sf2.quantity.IQuantity;
+
 /**
  * The ITimestampedValue interface must be implemented by all objects which
  * have a timestamp component and support storage within timestamped value
@@ -27,4 +29,6 @@ public interface ITimestampedValue {
      * @param valid - true if this object is currently valid, false if not.
      */
     public void setValid(boolean valid);
+    
+    public IQuantity getQuantity();
 }

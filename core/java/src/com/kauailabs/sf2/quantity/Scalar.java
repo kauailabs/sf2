@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.time.ICopy;
 
-public class Scalar implements IInterpolate<Scalar>, ICopy<Scalar>, IQuantity, IQuantityContainer {
+public class Scalar implements IInterpolate<Scalar>, ICopy<Scalar>, IQuantity {
 	float value;
 	public float get() { return value; }
 	public void set(float value) { this.value = value; }
@@ -30,11 +30,16 @@ public class Scalar implements IInterpolate<Scalar>, ICopy<Scalar>, IQuantity, I
 		out.set(interpolated_value);
 	}
 	@Override
-	public void getPrintableString(String printable_string) {
+	public boolean getPrintableString(String printable_string) {
 		printable_string = Float.toString(value);
+		return true;
 	}
 	@Override
-	public void getQuantities(ArrayList<IQuantity> quantities) {
-		quantities.add(this);
+	public boolean getContainedQuantities(ArrayList<IQuantity> quantities) {
+		return false;
 	}
+	@Override
+	public boolean getContainedQuantityNames(ArrayList<String> quantity_names) {
+		return false;
+	}	
 }
