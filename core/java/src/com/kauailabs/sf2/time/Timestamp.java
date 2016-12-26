@@ -125,8 +125,8 @@ public class Timestamp implements IQuantity {
 	}
 
 	@Override
-	public boolean getPrintableString(String printable_string) {
-		printable_string = Long.toString(timestamp);
+	public boolean getPrintableString(StringBuilder printable_string) {
+		printable_string.append(timestamp);
 		return true;
 	}
 

@@ -28,8 +28,8 @@ public class Boolean implements IInterpolate<Boolean>, ICopy<Boolean>, IQuantity
 		out.set((time_ratio >= 0.5) ? to.value : this.value);
 	}
 	@Override
-	public boolean getPrintableString(String printable_string) {
-		printable_string = value ? "True" : "False";
+	public boolean getPrintableString(StringBuilder printable_string) {
+		printable_string.append(value);
 		return true;
 	}
 	@Override

@@ -30,8 +30,8 @@ public class Scalar implements IInterpolate<Scalar>, ICopy<Scalar>, IQuantity {
 		out.set(interpolated_value);
 	}
 	@Override
-	public boolean getPrintableString(String printable_string) {
-		printable_string = Float.toString(value);
+	public boolean getPrintableString(StringBuilder printable_string) {
+		printable_string.append(value);
 		return true;
 	}
 	@Override

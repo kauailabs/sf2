@@ -130,7 +130,7 @@ public class Pose implements IInterpolate<Pose>, ICopy<Pose>, IQuantity {
 	}
 
 	@Override
-	public boolean getPrintableString(String printable_string) {
+	public boolean getPrintableString(StringBuilder printable_string) {
 		return false;
 	}
 }

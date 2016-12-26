@@ -61,6 +61,7 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
     	curr_index = 0;
     	num_valid_samples = 0;
     	this.ts_info = ts_info;
+    	this.value_name = name;
     }
     
     /**
@@ -258,13 +259,15 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
     	next_available_index++;
     	
     	String new_filename = filename_prefix + Integer.toString(next_available_index);
-    	return writeToDiskFile(directory + new_filename);
+    	return writeToDiskFile(directory + new_filename + "." + filename_suffix);
     }
     
     public boolean writeToDiskFile(String file_path) {
     	try {
 			PrintWriter out = new PrintWriter(file_path);
-			return writeToDiskInternal(out);
+			boolean success = writeToDiskInternal(out);
+			out.close();
+			return success;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return false;
@@ -295,33 +298,35 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
     		String header = "Timestamp";
     		if (is_quantity_container) {
     			for (String quantity_name : quantity_names) {
-    				header += "," + quantity_name;
+    				header += "," + value_name + "." + quantity_name;
     			}
     		} else {
 				header += "," + value_name;
     		}
     		out.println(header);
     		
-    		String value_string = "";
-    		String printable_string = "";
-    		for ( int i = 0; i < num_to_write; i++) {
+     		for ( int i = 0; i < num_to_write; i++) {
+        		StringBuilder value_string = new StringBuilder();
     			T entry_to_write = history.get(oldest_index++);
+    			quantity = entry_to_write.getQuantity();
+    			value_string.append(Long.toString(entry_to_write.getTimestamp()));
+    			value_string.append(',');
         		if (is_quantity_container) {
         			ArrayList<IQuantity> contained_quantities = new ArrayList<IQuantity>();
         			quantity.getContainedQuantities(contained_quantities);
         			int index = 0;
         			for (IQuantity contained_quantity : contained_quantities) {
+                   		StringBuilder printable_string = new StringBuilder();
         				if ( index++ != 0) {
-        					value_string += ",";
+        					value_string.append(',');
         				}
-        				quantity.getPrintableString(printable_string);
-        				value_string += printable_string;
+        				contained_quantity.getPrintableString(printable_string);
+        				value_string.append(printable_string);
         			}
         		} else {
-        			quantity.getPrintableString(printable_string);
-        			value_string = printable_string; 
+        			quantity.getPrintableString(value_string);
         		}
-        		out.println(value_string);
+        		out.println(value_string.toString());
     			if ( oldest_index >= history_size) {
 					oldest_index = 0;
 				}

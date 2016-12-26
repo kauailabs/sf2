@@ -30,8 +30,8 @@ public class Count implements IInterpolate<Count>, ICopy<Count>, IQuantity {
 		out.set(interpolated_value);
 	}
 	@Override
-	public boolean getPrintableString(String printable_string) {
-		printable_string = Long.toString(count);
+	public boolean getPrintableString(StringBuilder printable_string) {
+		printable_string.append(count);
 		return true;
 	}
 	@Override

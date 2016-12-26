@@ -363,7 +363,7 @@ public class Quaternion implements IInterpolate<Quaternion>, ICopy<Quaternion>, 
 	}
 
 	@Override
-	public boolean getPrintableString(String printable_string) {
+	public boolean getPrintableString(StringBuilder printable_string) {
 		return false;
 	}
 

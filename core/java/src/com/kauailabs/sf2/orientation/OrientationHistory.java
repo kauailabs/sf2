@@ -182,4 +182,8 @@ public class OrientationHistory implements ISensorDataSubscriber{
 		tsq.setTimestamp(timestamp.getMilliseconds());
 		orientation_history.add(tsq);		
 	}  	
+	
+	public boolean writeToDirectory(String directory_path) {
+		return orientation_history.writeToDiskInDirectory(directory_path);
+	}
 }

@@ -36,7 +36,7 @@ public class Vector implements IInterpolate<Vector>, ICopy<Vector>, IQuantity {
 		out.magnitude = magnitude;
 	}
 	@Override
-	public boolean getPrintableString(String printable_string) {
+	public boolean getPrintableString(StringBuilder printable_string) {
 		return false;
 	}
 
