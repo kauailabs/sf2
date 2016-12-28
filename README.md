@@ -11,11 +11,12 @@ The Kauai Labs Sensor Fusion Framework (SF2), a key component of the Build Bette
 
 Designed to integrate easily into FRC and FTC Robot Control Systems, SF2:
 
-acquires data streams from multiple sensors
-synchronizes sensor data streams
-interpolates data from low-sample rate sensors
-fuses sensor data streams using state-of-the-art algorithms
-includes tools for debugging, data visualization and offline data analysis
+- acquires data streams from multiple sensors
+- synchronizes sensor data streams
+- interpolates data from low-sample rate sensors
+- fuses sensor data streams using state-of-the-art algorithms
+- includes tools for debugging, data visualization and offline data analysis
+
 SF2 works seamlessly with Kauai Labs Sensors (navX-MXP, navX-Micro) and supports multiple robot platforms including FRC robotics, FTC robotics and Linux/Windows-based robot control systems.
 
 SF2 includes tutorials and examples with source code in several popular programming languages to streamline the integration of advanced sensor fusion into a robot control system.
