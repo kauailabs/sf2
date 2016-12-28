@@ -1,7 +1,7 @@
 # sf2
 KauaiLabs Robotics Sensor Fusion Framework
 
-The Kauai Labs Sensor Fusion Framework (SF2), a key component of the Build Better Robots® platform, is comprised of software libraries and tools enabling robot software developers to quickly and easily fuse data from various sensors, enabling several key new features for autonomous and driver-assisted navigation:
+The Kauai <a href="http://sf2.kauailabs.com>Labs Sensor Fusion Framework (SF2)</a>, a key component of the Build Better Robots® platform, is comprised of software libraries and tools enabling robot software developers to quickly and easily fuse data from various sensors, enabling several key new features for autonomous and driver-assisted navigation:
 
 - Video Processing Latency Correction
 - IMU Odometry
@@ -17,6 +17,6 @@ Designed to integrate easily into FRC and FTC Robot Control Systems, SF2:
 - fuses sensor data streams using state-of-the-art algorithms
 - includes tools for debugging, data visualization and offline data analysis
 
-SF2 works seamlessly with Kauai Labs Sensors (navX-MXP, navX-Micro) and supports multiple robot platforms including FRC robotics, FTC robotics and Linux/Windows-based robot control systems.
+SF2 works seamlessly with Kauai Labs Sensors (navX-MXP, navX-Micro) and supports multiple robot platforms including FRC robotics, FTC robotics and Linux/Windows-based robot control systems.  SF2 is an open framework and will work with third-party sensors.
 
 SF2 includes tutorials and examples with source code in several popular programming languages to streamline the integration of advanced sensor fusion into a robot control system.
