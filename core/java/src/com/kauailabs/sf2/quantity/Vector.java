@@ -3,7 +3,6 @@ package com.kauailabs.sf2.quantity;
 import java.util.ArrayList;
 
 import com.kauailabs.sf2.interpolation.IInterpolate;
-import com.kauailabs.sf2.time.ICopy;
 
 public class Vector implements IInterpolate<Vector>, ICopy<Vector>, IQuantity {
 	Scalar direction;

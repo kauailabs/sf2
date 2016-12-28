@@ -1,4 +1,4 @@
-package com.kauailabs.sf2.time;
+package com.kauailabs.sf2.quantity;
 
 public interface ICopy<T> {
 	public void copy(T t);

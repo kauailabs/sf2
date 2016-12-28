@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.orientation.Quaternion;
+import com.kauailabs.sf2.quantity.ICopy;
 import com.kauailabs.sf2.quantity.IQuantity;
 import com.kauailabs.sf2.quantity.Scalar;
-import com.kauailabs.sf2.time.ICopy;
 import com.kauailabs.sf2.units.Unit;
 import com.kauailabs.sf2.units.Unit.IUnit;
 

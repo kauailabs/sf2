@@ -11,6 +11,7 @@ package com.kauailabs.sf2.time;
 
 import com.kauailabs.sf2.interpolation.IInterpolate;
 import com.kauailabs.sf2.interpolation.IValueInterpolator;
+import com.kauailabs.sf2.quantity.ICopy;
 import com.kauailabs.sf2.quantity.IQuantity;
 import com.kauailabs.sf2.time.ITimestampedValue;
 
@@ -25,13 +26,14 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantity>
 
     private T value;
     private long timestamp;
-    private boolean valid;
-    private boolean interpolated;
+    byte flags;
+    
+    final static byte valid_flag = 0x01;
+    final static byte interpolated_flag = 0x02;
     
     public TimestampedValue(){
     	timestamp = 0;
-    	valid = false;
-    	this.interpolated = false;    	
+    	flags = 0;
     }
     
     /**
@@ -40,8 +42,7 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantity>
     public TimestampedValue(T value) {
     	this.value = value.instantiate_copy();
     	timestamp = 0;
-    	valid = false;
-    	this.interpolated = false;
+    	flags = 0;
     }
     
     /**
@@ -53,6 +54,7 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantity>
     public TimestampedValue(T src, long timestamp) {
     	this.value = src.instantiate_copy();
     	setTimestamp(timestamp);
+    	this.flags = 0;
     }
     
     /**
@@ -61,6 +63,8 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantity>
      */
     public TimestampedValue(TimestampedValue<T> src) {
     	this.value = src.getValue().instantiate_copy();
+    	this.timestamp = src.timestamp;
+    	this.flags = src.flags;
     }
     
     /**
@@ -80,10 +84,9 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantity>
      */
     public void set(TimestampedValue<T> src) {
     	this.value.copy(src.value);
-    	this.interpolated = src.interpolated;
-    	this.timestamp = src.timestamp;
-    	this.valid = true;
-    }
+     	this.timestamp = src.timestamp;
+       	this.flags = src.flags;
+   }
     
     /**
      * Initializes this TimestampedValue to be equal to the source value object and a 
@@ -94,8 +97,7 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantity>
     public void set(T src, long timestamp) {
     	this.value.copy(src);
     	this.timestamp = timestamp;
-    	this.valid = true;
-    	this.interpolated = false;
+    	this.flags = valid_flag; /* Interpolated = false */
     }
     
     public T getValue() { return value; }
@@ -106,7 +108,7 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantity>
      */
 	@Override
     public boolean getInterpolated() {
-    	return interpolated;
+    	return ((flags & interpolated_flag) != 0);
     }
     
 	/**
@@ -116,8 +118,12 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantity>
 	 */
 	@Override
     public void setInterpolated( boolean interpolated ) {
-    	this.interpolated = interpolated;
-    }
+		if ( interpolated ) {
+			flags |= interpolated_flag;
+		} else {
+			flags &= ~interpolated_flag;
+		}
+     }
 
 	/**
 	 * Modifies this TimestampedValue (representing the "from" value) to
@@ -153,7 +159,7 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantity>
 	 */
 	@Override
 	public boolean getValid() {
-		return this.valid;
+		return ((flags & valid_flag) != 0);
 	}
 
 	/**
@@ -164,7 +170,11 @@ public class TimestampedValue<T extends ICopy<T> & IInterpolate<T> & IQuantity>
 	 */
 	@Override
 	public void setValid(boolean valid) {
-		this.valid = valid;
+		if ( valid ) {
+			flags |= valid_flag;
+		} else {
+			flags &= ~valid_flag;
+		}
 	}
 
 	@Override

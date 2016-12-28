@@ -3,7 +3,6 @@ package com.kauailabs.sf2.quantity;
 import java.util.ArrayList;
 
 import com.kauailabs.sf2.interpolation.IInterpolate;
-import com.kauailabs.sf2.time.ICopy;
 
 public class Scalar implements IInterpolate<Scalar>, ICopy<Scalar>, IQuantity {
 	float value;

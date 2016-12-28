@@ -7,6 +7,12 @@ public class Unit {
 	public float convertToPrimaryUnits(float value) { return value; }
 	public float convertFromPrimaryUnits(float value) { return value; }
 	
+	public interface IUnit
+	{
+		public String getName();
+		public String getAbbreviation();
+	}
+	
 	public interface IUnitFamily
 	{
 		public IUnit getPrimaryUnit();
@@ -16,12 +22,6 @@ public class Unit {
 	public interface IUnitDescendant
 	{
 		public IUnitFamily getUnitFamily();		
-	}
-	
-	public interface IUnit
-	{
-		public String getName();
-		public String getAbbreviation();
 	}
 	
 	public class Unitless implements IUnit {
@@ -124,7 +124,7 @@ public class Unit {
 			@Override public float convertToPrimaryUnits(float value) { return value * DEGREES_TO_RADIANS; }
 			@Override public float convertFromPrimaryUnits(float value) { return value * RADIANS_TO_DEGREES; }			
 		}
-		public class Compass extends AngleUnit {
+		public class CompassHeading extends AngleUnit {
 			/* North is 0 degrees, range 0-360. */
 			public static final float DEGREES_IN_HALF_CIRCLE = 180.0f;
 			@Override public String getName() { return "Heading"; }
@@ -146,7 +146,7 @@ public class Unit {
 		@Override public IUnit[] getSecondaryUnits() { 
 			ArrayList<IUnit> secondary_units = new ArrayList<IUnit>();
 			secondary_units.add(new Degrees());			
-			secondary_units.add(new Compass());
+			secondary_units.add(new CompassHeading());
 			secondary_units.add(new Revolutions());
 			return (IUnit[])secondary_units.toArray(new IUnit[secondary_units.size()]);
 		}		
@@ -175,14 +175,6 @@ public class Unit {
 			@Override public String getAbbreviation() { return "min"; }				
 			@Override public float convertToPrimaryUnits(float value) { return value * MINUTES_TO_SECONDS; }
 			@Override public float convertFromPrimaryUnits(float value) { return value * SECONDS_TO_MINUTES; }			
-		}
-		public class SecondSquared {		
-			public static final String name = "Seconds per Second";
-			public static final String abbreviation = "s^2";				
-		}
-		public class SecondCubed {		
-			public static final String name = "Seconds per Second per Second";
-			public static final String abbreviation = "s^3";				
 		}
 		@Override
 		public IUnit getPrimaryUnit() { return new Seconds(); };

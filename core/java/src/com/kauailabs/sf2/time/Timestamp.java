@@ -114,13 +114,17 @@ public class Timestamp implements IQuantity {
 		switch ( resolution ) {		
 		case Second:
 			timestamp = (long)seconds;
+			break;
 		case Millisecond:
 		default:
 			timestamp = (long)(seconds * MILLISECONDS_PER_SECOND);
+			break;
 		case Microsecond:
 			timestamp = (long)(seconds * MICROSECONDS_PER_SECOND);
+			break;
 		case Nanosecond:
 			timestamp = (long)(seconds * NANOSECONDS_PER_SECOND);
+			break;
 		}	
 	}
 
