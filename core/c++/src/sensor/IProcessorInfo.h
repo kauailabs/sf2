@@ -10,6 +10,8 @@
 
 using namespace std;
 
+#include "../time/Timestamp.h"
+
 class IProcessorInfo {
 public:
 	virtual string getName() = 0;

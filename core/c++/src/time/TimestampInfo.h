@@ -29,7 +29,7 @@ public:
 	double average_latency_secs;
 	Timestamp default_timestamp;
 
-	TimestampInfo( Scope scope, Basis basis, double resolution_secs, double accuracy_secs, double drift_secs_per_hour, double average_latency_secs, Timestamp default_timestamp) {
+	TimestampInfo( Scope scope, Basis basis, double resolution_secs, double accuracy_secs, double drift_secs_per_hour, double average_latency_secs, Timestamp& default_timestamp) {
 		this->basis = basis;
 		this->resolution_secs = resolution_secs;
 		this->accuracy_secs = accuracy_secs;

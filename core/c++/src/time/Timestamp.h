@@ -140,7 +140,7 @@ public:
 		return true;
 	}
 
-	bool getContainedQuantities(forward_list<IQuantity>& quantities) {
+	bool getContainedQuantities(forward_list<IQuantity *>& quantities) {
 		return false;
 	}
 
