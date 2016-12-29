@@ -3,6 +3,7 @@
 	<name>sf2-frc-cpp</name>
 	<comment></comment>
 	<projects>
+		<project>sf2-core-cpp</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -1,10 +1,26 @@
-/*
- * OrientationHistory.h
- *
- *  Created on: Dec 28, 2016
- *      Author: Scott
- */
+/* ============================================
+ SF2 source code is placed under the MIT license
+ Copyright (c) 2017 Kauai Labs
 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ===============================================
+ */
 #ifndef SRC_ORIENTATION_ORIENTATIONHISTORY_H_
 #define SRC_ORIENTATION_ORIENTATIONHISTORY_H_
 
@@ -28,8 +44,7 @@ using namespace std;
  * object is created via interpolation.
  * @author Scott
  */
-class OrientationHistory : ISensorDataSubscriber
-{
+class OrientationHistory: ISensorDataSubscriber {
 	ISensorDataSource& quat_sensor;
 	SensorDataSourceInfo& quat_data_source_info;
 	ThreadsafeInterpolatingTimeHistory<TimestampedValue<Quaternion>> orientation_history;
@@ -54,16 +69,18 @@ public:
 	 * @param history_length_seconds - the number of seconds the history will represent.  This value
 	 * may not be larger than @value #MAX_ORIENTATION_HISTORY_IN_SECONDS seconds.
 	 */
-	OrientationHistory(ISensorInfo& quat_sensor, int history_length_num_samples) {
+	OrientationHistory(ISensorInfo& quat_sensor,
+			int history_length_num_samples) {
 
 		this->quat_sensor = quat_sensor.getSensorDataSource();
 
 		int index = 0;
 		quaternion_quantity_index = -1;
 		forward_list<SensorDataSourceInfo *> sensor_data_source_infos;
-		quat_sensor.getSensorDataSource().getSensorDataSourceInfos(sensor_data_source_infos);
-		for ( SensorDataSourceInfo item : sensor_data_source_infos){
-			if ( item.getName().compare("Quaternion") == 0) {
+		quat_sensor.getSensorDataSource().getSensorDataSourceInfos(
+				sensor_data_source_infos);
+		for (SensorDataSourceInfo item : sensor_data_source_infos) {
+			if (item.getName().compare("Quaternion") == 0) {
 				quaternion_quantity_index = index;
 				quat_data_source_info = item;
 				break;
@@ -72,24 +89,33 @@ public:
 		}
 
 		if (quaternion_quantity_index == -1) {
-			printf("The provided ISensorInfo (quat_sensor) object"
-				+ "must contain a SensorDataSourceInfo object named 'Quaternion'.");
+			printf(
+					"The provided ISensorInfo (quat_sensor) object"
+							+ "must contain a SensorDataSourceInfo object named 'Quaternion'.");
 			return;
 		}
 
-		if ( history_length_num_samples > MAX_ORIENTATION_HISTORY_LENGTH_NUM_SAMPLES) {
-			history_length_num_samples = MAX_ORIENTATION_HISTORY_LENGTH_NUM_SAMPLES;
+		if (history_length_num_samples
+				> MAX_ORIENTATION_HISTORY_LENGTH_NUM_SAMPLES) {
+			history_length_num_samples =
+					MAX_ORIENTATION_HISTORY_LENGTH_NUM_SAMPLES;
 		}
 		Quaternion default_quat = new Quaternion();
-		TimestampedValue<Quaternion> default_ts_quat = new TimestampedValue<Quaternion>(default_quat);
-		this->orientation_history = new ThreadsafeInterpolatingTimeHistory<TimestampedValue<Quaternion>>(
-				default_ts_quat, history_length_num_samples,quat_sensor.getSensorTimestampInfo(),
+		TimestampedValue<Quaternion> default_ts_quat = new TimestampedValue<
+				Quaternion>(default_quat);
+		this->orientation_history = new ThreadsafeInterpolatingTimeHistory<
+				TimestampedValue<Quaternion>>(default_ts_quat,
+				history_length_num_samples,
+				quat_sensor.getSensorTimestampInfo(),
 				quat_data_source_info.getName(),
 				quat_data_source_info.getQuantityUnits());
 
 		this->quat_sensor.subscribe(this);
 
 		temp = new Scalar();
+	}
+
+	virtual ~OrientationHistory() {
 	}
 
 	/**
@@ -118,7 +144,8 @@ public:
 	 * @param requested_timestamp - sensor timestamp to retrieve
 	 * @return TimestampedQuaternion at requested timestamp, or null.
 	 */
-	bool getQuaternionAtTime(long requested_timestamp, TimestampedValue<Quaternion> out) {
+	bool getQuaternionAtTime(long requested_timestamp,
+			TimestampedValue<Quaternion> out) {
 		return orientation_history.get(requested_timestamp, out);
 	}
 
@@ -131,15 +158,15 @@ public:
 	 * If a yaw angle at the specified timestamp could not be found/interpolated, the
 	 * value INVALID_ANGLE (NaN) will be returned.
 	 */
-    float getYawDegreesAtTime( long requested_timestamp ) {
-    	TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
-    	if(getQuaternionAtTime( requested_timestamp, match )) {
-     		match.getValue().getYawRadians(temp);
-    		return temp.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
-    	} else {
-    		return NAN;
-    	}
-    }
+	float getYawDegreesAtTime(long requested_timestamp) {
+		TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
+		if (getQuaternionAtTime(requested_timestamp, match)) {
+			match.getValue().getYawRadians(temp);
+			return temp.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
+		} else {
+			return NAN;
+		}
+	}
 
 	/**
 	 * Retrieves the pitch angle in degrees at the specified sensor timestamp.
@@ -150,15 +177,15 @@ public:
 	 * If a pitch angle at the specified timestamp could not be found/interpolated, the
 	 * value INVALID_ANGLE (NaN) will be returned.
 	 */
-    float getPitchDegreesAtTime( long requested_timestamp ) {
-    	TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
-    	if(getQuaternionAtTime( requested_timestamp, match )){
-    		match.getValue().getPitch(temp);
+	float getPitchDegreesAtTime(long requested_timestamp) {
+		TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
+		if (getQuaternionAtTime(requested_timestamp, match)) {
+			match.getValue().getPitch(temp);
 			return temp.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
-    	} else {
-    		return NAN;
-    	}
-    }
+		} else {
+			return NAN;
+		}
+	}
 
 	/**
 	 * Retrieves the roll angle in degrees at the specified sensor timestamp.
@@ -169,18 +196,19 @@ public:
 	 * If a roll angle at the specified timestamp could not be found/interpolated, the
 	 * value INVALID_ANGLE (NaN) will be returned.
 	 */
-    float getRollDegreesAtTime( long requested_timestamp ) {
-    	TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
-    	if(getQuaternionAtTime( requested_timestamp, match )) {
-    		match.getValue().getRoll(temp);
-    		return temp.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
-    	} else {
-    		return NAN;
-    	}
-    }
+	float getRollDegreesAtTime(long requested_timestamp) {
+		TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
+		if (getQuaternionAtTime(requested_timestamp, match)) {
+			match.getValue().getRoll(temp);
+			return temp.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
+		} else {
+			return NAN;
+		}
+	}
 
-	virtual void publish(forward_list<IQuantity&> curr_values, Timestamp& timestamp) {
-		Quaternion q = ((Quaternion)curr_values[quaternion_quantity_index]);
+	virtual void publish(forward_list<IQuantity&> curr_values,
+			Timestamp& timestamp) {
+		Quaternion q = ((Quaternion) curr_values[quaternion_quantity_index]);
 		TimestampedValue<Quaternion> tsq = new TimestampedValue<Quaternion>(q);
 		tsq.setTimestamp(timestamp.getMilliseconds());
 		orientation_history.add(tsq);

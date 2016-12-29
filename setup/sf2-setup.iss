@@ -41,6 +41,7 @@ Source: "weblinks\sf2-software.url"; DestDir: "{app}"
 Source: "graphics\*.*"; DestDir: "{app}\graphics"; Flags: recursesubdirs
 Source: "..\core\java\jar\*.*"; DestDir: "{%HOMEPATH}\sf2\java\lib"
 Source: "..\frc\java\jar\*.*";  DestDir: "{%HOMEPATH}\sf2\java\lib"
+Source: "..\frc\java\jar\*.*"; DestDir: "{%HOMEPATH}\wpilib\user\java\lib"
 Source: "..\core\java\src\*.*"; DestDir: "{%HOMEPATH}\sf2\java\src"; Flags: recursesubdirs
 Source: "..\frc\java\src\*.*"; DestDir: "{%HOMEPATH}\sf2\java\src"; Flags: recursesubdirs
 Source: "..\core\java\src\docs\*.*"; DestDir: "{%HOMEPATH}\sf2\java\javadoc\core"; Flags: recursesubdirs
@@ -50,6 +51,16 @@ Source: "..\core\LabVIEW\*.*"; DestDir: "{%HOMEPATH}\sf2\labview"; Flags: recurs
 Source: "..\frc\LabVIEW\*.*"; DestDir: "{%HOMEPATH}\sf2\labview"; Flags: recursesubdirs
 Source: "..\core\LabVIEW\*.*"; DestDir: "{code:GetLabVIEWDirName}vi.lib\Rock Robotics\WPI\ThirdParty\sensors\SF2"; Flags: createallsubdirs recursesubdirs
 Source: "..\frc\LabVIEW\*.*"; DestDir: "{code:GetLabVIEWDirName}vi.lib\Rock Robotics\WPI\ThirdParty\sensors\SF2"; Flags: createallsubdirs recursesubdirs
+
+Source: "..\core\c++\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\core\src"
+Source: "..\core\c++\src\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\core\src"; Flags: recursesubdirs
+Source: "..\core\c++\src\*.h"; DestDir: "{%HOMEPATH}\sf2\cpp\core\include"; Flags: recursesubdirs
+Source: "..\core\c++\doxygen\html\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\core\docs"
+Source: "..\frc\c++\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\src"
+Source: "..\frc\c++\src\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\src"; Flags: recursesubdirs
+Source: "..\frc\c++\src\*.h"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\include"; Flags: recursesubdirs
+Source: "..\frc\c++\doxygen\html\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\docs"
+Source: "..\frc\c++\doxygen\html\*.*"; DestDir: "{%HOMEPATH}\wpilib\user\cpp\docs"
 
 ;Source: "..\roborio\java\navx_frc\src\com\*.*"; DestDir: "{%HOMEPATH}\navx-mxp\java\src\com"; Flags: recursesubdirs
 ;Source: "..\roborio\java\navx_frc\src\docs\*.*"; DestDir: "{%HOMEPATH}\navx-mxp\java\docs"; Flags: recursesubdirs

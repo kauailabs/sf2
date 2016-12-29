@@ -12,11 +12,14 @@ pushd frc\java\src
 javadoc -d ./docs -overview ./overview.htm -subpackages com.kauailabs.sf2
 popd
 
-REM Generate C++ Public Class Library Documentation
+Generate C++ Public Class Library Documentation
 
-REM pushd roborio\c++\doxygen
+pushd core\c++\doxygen
+doxygen doxygen.cfg
+popd
 
-REM doxygen doxygen.cfg
+pushd frc\c++\doxygen
+doxygen doxygen.cfg
+popd
 
-REM popd
 popd
