@@ -55,10 +55,12 @@ Source: "..\frc\LabVIEW\*.*"; DestDir: "{code:GetLabVIEWDirName}vi.lib\Rock Robo
 Source: "..\core\c++\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\core\src"
 Source: "..\core\c++\src\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\core\src"; Flags: recursesubdirs
 Source: "..\core\c++\src\*.h"; DestDir: "{%HOMEPATH}\sf2\cpp\core\include"; Flags: recursesubdirs
+Source: "..\core\c++\src\*.h"; DestDir: "{%HOMEPATH}\wpilib\user\cpp\include"; Flags: recursesubdirs
 Source: "..\core\c++\doxygen\html\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\core\docs"
 Source: "..\frc\c++\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\src"
 Source: "..\frc\c++\src\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\src"; Flags: recursesubdirs
 Source: "..\frc\c++\src\*.h"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\include"; Flags: recursesubdirs
+Source: "..\frc\c++\src\*.h"; DestDir: "{%HOMEPATH}\wpilib\user\cpp\include"; Flags: recursesubdirs
 Source: "..\frc\c++\doxygen\html\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\docs"
 Source: "..\frc\c++\doxygen\html\*.*"; DestDir: "{%HOMEPATH}\wpilib\user\cpp\docs"
 
