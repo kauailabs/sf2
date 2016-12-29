@@ -1,4 +1,4 @@
-mset ZIP_UTILITY="C:\Program Files\7-Zip\7z"
+set ZIP_UTILITY="C:\Program Files\7-Zip\7z"
 REM Batch file to create the SF2 distributable packages
 
 pushd ..
@@ -40,6 +40,9 @@ mkdir java\javadoc\core
 mkdir java\javadoc\frc
 REM mkdir java\examples
 mkdir labview
+mkdir cpp\src
+mkdir cpp\include
+mkdir cpp\docs
 
 REM Copy Java components
 cp ../core/java/jar/* ./java/lib
@@ -57,8 +60,8 @@ cp ../core/c++/* ./cpp/src
 cp -r ../core/c++/src/* ./cpp/src
 cp ../frc/c++/* ./cpp/src
 cp -r ../frc/c++/src/* ./cpp/src
-cp -r ../core/c++/src/*.h ./cpp/include
-cp -r ../frc/c++/src/*.h ./cpp/include
+cp -r ../core/c++/src/* ./cpp/include
+cp -r ../frc/c++/src/* ./cpp/include
 cp -r ../frc/c++/doxygen/html/* ./cpp/docs
 
 cp ../build/version.txt .
