@@ -19,6 +19,6 @@ Designed to integrate easily into FRC and FTC Robot Control Systems, SF2:
 - fuses sensor data streams using state-of-the-art algorithms
 - includes tools for debugging, data visualization and offline data analysis
 
-SF2 works seamlessly with Kauai Labs Sensors (navX-MXP, navX-Micro) and supports multiple robot platforms including FIRST FRC robotics, FIRST FTC robotics and Linux/Windows-based robot control systems.  SF2 is an open framework and will work with third-party sensors.
+SF2 works seamlessly with Kauai Labs Sensors (navX-MXP, navX-Micro) and supports multiple robot platforms including FIRST FRC robotics, FIRST FTC robotics and Linux/Windows-based robot control systems. SF2 is an open framework and can work with any third-party sensors which implement the SF2 sensor data source interface.
 
 SF2 includes tutorials and examples with source code in several popular programming languages to streamline the integration of advanced sensor fusion into a robot control system.
