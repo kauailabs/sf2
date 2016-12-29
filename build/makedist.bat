@@ -52,6 +52,14 @@ REM rm -r ../roborio/java/navXMXP_*/bin
 REM rm -r ../roborio/java/navXMXP_*/build
 cp -r ../core/LabVIEW/* ./labview
 cp -r ../frc/LabVIEW/* ./labview
+REM Copy C++ Components
+cp ../core/c++/* ./cpp/src
+cp -r ../core/c++/src/* ./cpp/src
+cp ../frc/c++/* ./cpp/src
+cp -r ../frc/c++/src/* ./cpp/src
+cp -r ../core/c++/src/*.h ./cpp/include
+cp -r ../frc/c++/src/*.h ./cpp/include
+cp -r ../frc/c++/doxygen/html/* ./cpp/docs
 
 cp ../build/version.txt .
 
