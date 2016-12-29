@@ -263,7 +263,7 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
 		}
 	}
 
-	public boolean writeToDiskInDirectory(String directory) {
+	public boolean writeToDirectory(String directory) {
 
 		File dir = new File(directory);
 		if (!dir.isDirectory() || !dir.canWrite()) {
@@ -300,10 +300,10 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
 		next_available_index++;
 
 		String new_filename = filename_prefix + Integer.toString(next_available_index);
-		return writeToDiskFile(directory + new_filename + "." + filename_suffix);
+		return writeToFile(directory + new_filename + "." + filename_suffix);
 	}
 
-	public boolean writeToDiskFile(String file_path) {
+	public boolean writeToFile(String file_path) {
 		try {
 			PrintWriter out = new PrintWriter(file_path);
 			boolean success = writeToDiskInternal(out);

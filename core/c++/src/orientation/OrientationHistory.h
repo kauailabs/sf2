@@ -215,7 +215,11 @@ public:
 	}
 
 	bool writeToDirectory(string& directory_path) {
-		return orientation_history.writeToDiskInDirectory(directory_path);
+		return orientation_history.writeToDirectory(directory_path);
+	}
+
+	bool writeToFile(string& file_path) {
+		return orientation_history.writeToFile(file_path);
 	}
 };
 

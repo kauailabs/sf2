@@ -254,7 +254,7 @@ class ThreadsafeInterpolatingTimeHistory {
 		}
 	}
 
-	bool writeToDiskInDirectory(string directory) {
+	bool writeToDirectory(string& directory) {
 		File dir = new File(directory);
 		if (!dir.isDirectory() || !dir.canWrite()) {
 			printf(
@@ -304,10 +304,10 @@ class ThreadsafeInterpolatingTimeHistory {
 		next_available_index++;
 
 		string new_filename = filename_prefix + string(next_available_index);
-		return writeToDiskFile(directory + new_filename + "." + filename_suffix);
+		return writeToFile(directory + new_filename + "." + filename_suffix);
 	}
 
-	bool writeToDiskFile(const string& file_path) {
+	bool writeToFile(const string& file_path) {
 		PrintWriter out = new PrintWriter(file_path);
 		bool success = writeToDiskInternal(out);
 		out.close();

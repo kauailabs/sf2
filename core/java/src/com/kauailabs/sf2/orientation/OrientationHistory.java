@@ -231,6 +231,11 @@ public class OrientationHistory implements ISensorDataSubscriber {
 	}
 
 	public boolean writeToDirectory(String directory_path) {
-		return orientation_history.writeToDiskInDirectory(directory_path);
+		return orientation_history.writeToDirectory(directory_path);
 	}
+	
+	public boolean writeToFile(String file_path){
+		return orientation_history.writeToFile(file_path);
+	}
+	
 }
