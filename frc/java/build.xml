@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!-- Configuration of the Ant build system to generate a Jar file --> 
 <project name="sf2-frc" default="CreateJar">
+    <target name="clean">
+        <delete dir="jar"/>
+    </target>
 	<target name="CreateJar" description="Create Jar file"                                             >
         <jar destfile="./jar/sf2-frc.jar" basedir="./bin"/>
     	<!-- Include sf2-core java library within the jar. -->
-    	<jar destfile="./jar/sf2-frc.jar" basedir="../sf2-core/bin" update="true"/>
+    	<jar destfile="./jar/sf2-frc.jar" basedir="../../core/java/bin" update="true"/>
     </target>
 </project>

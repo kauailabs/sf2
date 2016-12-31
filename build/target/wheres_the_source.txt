@@ -1,0 +1,8 @@
+The SF2 Github repository is at https://github.com/kauailabs/sf2.
+
+This repository includes:
+
+- SF2 Core and FRC source code (Java, LabVIEW and C++) and project files for Eclipse
+- SF2 Setup Program (Innosetup)
+
+For more information please also see the online guide to the sources in the "Advanced" section at http://sf2.kauailabs.com.
