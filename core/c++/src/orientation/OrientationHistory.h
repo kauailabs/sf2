@@ -48,8 +48,11 @@ class OrientationHistory: ISensorDataSubscriber {
 	ISensorDataSource& quat_sensor;
 	SensorDataSourceInfo& quat_data_source_info;
 	ThreadsafeInterpolatingTimeHistory<TimestampedValue<Quaternion>> orientation_history;
-	Scalar temp;
+	Scalar temp_s;
 	int quaternion_quantity_index;
+	int timestamp_quantity_index;
+	TimestampedValue<Quaternion> temp_tsq;
+	Timestamp system_timestamp;
 
 public:
 
@@ -76,6 +79,7 @@ public:
 
 		int index = 0;
 		quaternion_quantity_index = -1;
+		timestamp_quantity_index = -1;
 		forward_list<SensorDataSourceInfo *> sensor_data_source_infos;
 		quat_sensor.getSensorDataSource().getSensorDataSourceInfos(
 				sensor_data_source_infos);
@@ -83,7 +87,9 @@ public:
 			if (item.getName().compare("Quaternion") == 0) {
 				quaternion_quantity_index = index;
 				quat_data_source_info = item;
-				break;
+			}
+			if (item.getName().compare("Timestamp") == 0) {
+				timestamp_quantity_index = index;
 			}
 			index++;
 		}
@@ -111,8 +117,6 @@ public:
 				quat_data_source_info.getQuantityUnits());
 
 		this->quat_sensor.subscribe(this);
-
-		temp = new Scalar();
 	}
 
 	virtual ~OrientationHistory() {
@@ -159,10 +163,10 @@ public:
 	 * value INVALID_ANGLE (NaN) will be returned.
 	 */
 	float getYawDegreesAtTime(long requested_timestamp) {
-		TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
+		TimestampedValue<Quaternion> match;
 		if (getQuaternionAtTime(requested_timestamp, match)) {
-			match.getValue().getYawRadians(temp);
-			return temp.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
+			match.getValue().getYawRadians(temp_s);
+			return temp_s.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
 		} else {
 			return NAN;
 		}
@@ -178,10 +182,10 @@ public:
 	 * value INVALID_ANGLE (NaN) will be returned.
 	 */
 	float getPitchDegreesAtTime(long requested_timestamp) {
-		TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
+		TimestampedValue<Quaternion> match;
 		if (getQuaternionAtTime(requested_timestamp, match)) {
-			match.getValue().getPitch(temp);
-			return temp.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
+			match.getValue().getPitch(temp_s);
+			return temp_s.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
 		} else {
 			return NAN;
 		}
@@ -197,21 +201,26 @@ public:
 	 * value INVALID_ANGLE (NaN) will be returned.
 	 */
 	float getRollDegreesAtTime(long requested_timestamp) {
-		TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
+		TimestampedValue<Quaternion> match;
 		if (getQuaternionAtTime(requested_timestamp, match)) {
-			match.getValue().getRoll(temp);
-			return temp.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
+			match.getValue().getRoll(temp_s);
+			return temp_s.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
 		} else {
 			return NAN;
 		}
 	}
 
 	virtual void publish(forward_list<IQuantity&> curr_values,
-			Timestamp& timestamp) {
-		Quaternion q = ((Quaternion) curr_values[quaternion_quantity_index]);
-		TimestampedValue<Quaternion> tsq = new TimestampedValue<Quaternion>(q);
-		tsq.setTimestamp(timestamp.getMilliseconds());
-		orientation_history.add(tsq);
+			Timestamp& sys_timestamp) {
+		Timestamp& sensor_timestamp;
+		if ( timestamp_quantity_index != -1 ) {
+			sensor_timestamp = ((Timestamp)curr_values[timestamp_quantity_index]);
+		} else {
+			sensor_timestamp = sys_timestamp;
+		}
+		Quaternion& q = ((Quaternion) curr_values[quaternion_quantity_index]);
+		temp_tsq.set(q,  sensor_timestamp.getMilliseconds());
+		orientation_history.add(temp_tsq);
 	}
 
 	bool writeToDirectory(string& directory_path) {

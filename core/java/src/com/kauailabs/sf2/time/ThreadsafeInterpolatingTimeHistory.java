@@ -215,6 +215,7 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
 				 * reference an object within the volatile (threadsafe) history.
 				 */
 				out.copy(match);
+				out.setInterpolated(false);
 				success = true;
 			}
 		}

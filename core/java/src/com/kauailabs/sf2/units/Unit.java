@@ -368,6 +368,76 @@ public class Unit {
 			}
 		}
 
+		public class Nanoseconds extends TimeUnit implements IUnit {
+			public static final float SECONDS_TO_NANOSECONDS = (float) (1.0f * 1000000000);
+			public static final float NANOSECONDS_TO_SECONDS = (float) (1.0f / 1000000000);
+			@Override
+			public String getName() {
+				return "Nanoseconds";
+			}
+
+			@Override
+			public String getAbbreviation() {
+				return "ns";
+			}
+			@Override
+			public float convertToPrimaryUnits(float value) {
+				return value * NANOSECONDS_TO_SECONDS;
+			}
+
+			@Override
+			public float convertFromPrimaryUnits(float value) {
+				return value * SECONDS_TO_NANOSECONDS;
+			}						
+		}
+
+		public class Microseconds extends TimeUnit implements IUnit {
+			public static final float SECONDS_TO_MICROSECONDS = (float) (1.0f * 1000000);
+			public static final float MICROSECONDS_TO_SECONDS = (float) (1.0f / 1000000);
+			@Override
+			public String getName() {
+				return "Microseconds";
+			}
+
+			@Override
+			public String getAbbreviation() {
+				return "us";
+			}
+			@Override
+			public float convertToPrimaryUnits(float value) {
+				return value * MICROSECONDS_TO_SECONDS;
+			}
+
+			@Override
+			public float convertFromPrimaryUnits(float value) {
+				return value * SECONDS_TO_MICROSECONDS;
+			}			
+		}
+
+		public class Milliseconds extends TimeUnit implements IUnit {
+			public static final float SECONDS_TO_MILLISECONDS = (float) (1.0f * 1000);
+			public static final float MILLISECONDS_TO_SECONDS = (float) (1.0f / 1000);
+			@Override
+			public String getName() {
+				return "Milliseconds";
+			}
+
+			@Override
+			public String getAbbreviation() {
+				return "ms";
+			}
+			
+			@Override
+			public float convertToPrimaryUnits(float value) {
+				return value * MILLISECONDS_TO_SECONDS;
+			}
+
+			@Override
+			public float convertFromPrimaryUnits(float value) {
+				return value * SECONDS_TO_MILLISECONDS;
+			}			
+		}
+
 		public class Seconds extends TimeUnit implements IUnit {
 			@Override
 			public String getName() {
@@ -440,6 +510,9 @@ public class Unit {
 			ArrayList<IUnit> secondary_units = new ArrayList<IUnit>();
 			secondary_units.add(new Hours());
 			secondary_units.add(new Minutes());
+			secondary_units.add(new Milliseconds());
+			secondary_units.add(new Microseconds());
+			secondary_units.add(new Nanoseconds());
 			return (IUnit[]) secondary_units.toArray(new IUnit[secondary_units.size()]);
 		}
 	}

@@ -57,9 +57,12 @@ public class OrientationHistory implements ISensorDataSubscriber {
 
 	ISensorDataSource quat_sensor;
 	ThreadsafeInterpolatingTimeHistory<TimestampedValue<Quaternion>> orientation_history;
-	Scalar temp;
+	Scalar temp_s;
 	int quaternion_quantity_index;
-
+	int timestamp_quantity_index;
+	TimestampedValue<Quaternion> temp_tsq;
+	Timestamp system_timestamp;
+	
 	public final int MAX_ORIENTATION_HISTORY_LENGTH_NUM_SAMPLES = 1000;
 
 	/**
@@ -91,12 +94,15 @@ public class OrientationHistory implements ISensorDataSubscriber {
 
 		int index = 0;
 		quaternion_quantity_index = -1;
+		timestamp_quantity_index = -1;
 		ArrayList<SensorDataSourceInfo> sensor_data_source_infos = new ArrayList<SensorDataSourceInfo>();
 		quat_sensor.getSensorDataSource().getSensorDataSourceInfos(sensor_data_source_infos);
 		for (SensorDataSourceInfo item : sensor_data_source_infos) {
 			if (item.getName().equalsIgnoreCase("Quaternion")) {
 				quaternion_quantity_index = index;
-				break;
+			}
+			if (item.getName().equalsIgnoreCase("Timestamp")) {
+				timestamp_quantity_index = index;
 			}
 			index++;
 		}
@@ -118,7 +124,11 @@ public class OrientationHistory implements ISensorDataSubscriber {
 
 		this.quat_sensor.subscribe(this);
 
-		temp = new Scalar();
+		temp_s = new Scalar();
+		
+		temp_tsq = new TimestampedValue<Quaternion>(new Quaternion());
+		
+		system_timestamp = new Timestamp();
 	}
 
 	/**
@@ -169,10 +179,10 @@ public class OrientationHistory implements ISensorDataSubscriber {
 	 *         returned.
 	 */
 	public float getYawDegreesAtTime(long requested_timestamp) {
-		TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
+		TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>(new Quaternion());
 		if (getQuaternionAtTime(requested_timestamp, match)) {
-			match.getValue().getYawRadians(temp);
-			return temp.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
+			match.getValue().getYawRadians(temp_s);
+			return temp_s.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
 		} else {
 			return Float.NaN;
 		}
@@ -191,10 +201,10 @@ public class OrientationHistory implements ISensorDataSubscriber {
 	 *         returned.
 	 */
 	public float getPitchDegreesAtTime(long requested_timestamp) {
-		TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
+		TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>(new Quaternion());
 		if (getQuaternionAtTime(requested_timestamp, match)) {
-			match.getValue().getPitch(temp);
-			return temp.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
+			match.getValue().getPitch(temp_s);
+			return temp_s.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
 		} else {
 			return Float.NaN;
 		}
@@ -213,21 +223,26 @@ public class OrientationHistory implements ISensorDataSubscriber {
 	 *         returned.
 	 */
 	public float getRollDegreesAtTime(long requested_timestamp) {
-		TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>();
+		TimestampedValue<Quaternion> match = new TimestampedValue<Quaternion>(new Quaternion());
 		if (getQuaternionAtTime(requested_timestamp, match)) {
-			match.getValue().getRoll(temp);
-			return temp.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
+			match.getValue().getRoll(temp_s);
+			return temp_s.get() * Unit.Angle.Degrees.RADIANS_TO_DEGREES;
 		} else {
 			return Float.NaN;
 		}
 	}
 
 	@Override
-	public void publish(IQuantity[] curr_values, Timestamp timestamp) {
+	public void publish(IQuantity[] curr_values, Timestamp sys_timestamp) {
+		Timestamp sensor_timestamp;
+		if ( timestamp_quantity_index != -1 ) {
+			sensor_timestamp = ((Timestamp)curr_values[timestamp_quantity_index]);
+		} else {
+			sensor_timestamp = sys_timestamp;
+		}
 		Quaternion q = ((Quaternion) curr_values[quaternion_quantity_index]);
-		TimestampedValue<Quaternion> tsq = new TimestampedValue<Quaternion>(q);
-		tsq.setTimestamp(timestamp.getMilliseconds());
-		orientation_history.add(tsq);
+		temp_tsq.set(q,  sensor_timestamp.getMilliseconds());
+		orientation_history.add(temp_tsq);
 	}
 
 	public boolean writeToDirectory(String directory_path) {
