@@ -49,13 +49,16 @@ class navXSensor: ISensorDataSource, ITimestampedDataSubscriber, ISensorInfo {
 	long last_system_timestamp;
 	long last_sensor_timestamp;
 	string sensor_name;
-	forward_list<ISensorDataSubscriber *> tsq_subscribers;bool navx_callback_registered;
+	forward_list<ISensorDataSubscriber *> tsq_subscribers;
+	bool navx_callback_registered;
 	forward_list<IQuantity*> active_sensor_data_quantities;
 	TimestampInfo navx_tsinfo;
 	priority_mutex subscriber_mutex;
 	Quaternion quaternion;
 	Scalar yaw, pitch, roll;
 	Unit::Angle::Degrees degrees;
+	Unit::Time::Milliseconds milliseconds;
+	Timestamp roborio_timestamp;
 
 public:
 	const static int QUANTITY_INDEX_QUATERNION = 0;
@@ -78,8 +81,15 @@ public:
 				1.0 / (360 * Timestamp::MILLISECONDS_PER_SECOND),/* Clock Drift - seconds per hour */
 				1.0 / Timestamp::MILLISECONDS_PER_SECOND, /* Average Latency */
 				ts); /* Clock drift/hour */
+		this->sensor_data_source_infos.insert_after(
+				this->sensor_data_source_infos.end(),
+				new SensorDataSourceInfo("Timestamp", ts, milliseconds));
 		forward_list<Unit::IUnit *> quaternion_units;
 		Quaternion::getUnits(quaternion_units);
+		this->sensor_data_source_infos.insert_after(
+				this->sensor_data_source_infos.end(),
+				new SensorDataSourceInfo("Timestamp", quaternion,
+						quaternion_units));
 		this->sensor_data_source_infos.insert_after(
 				this->sensor_data_source_infos.end(),
 				new SensorDataSourceInfo("Quaternion", quaternion,
@@ -106,22 +116,25 @@ public:
 	}
 
 	bool subscribe(ISensorDataSubscriber* subscriber) {
-		std::unique_lock<priority_mutex> sync(subscriber_mutex);
-		bool existing = false;
-		for (auto tsq_subscriber : tsq_subscribers) {
-			if (tsq_subscriber == subscriber) {
-				existing = true;
-				break;
+		{
+			std::unique_lock<priority_mutex> sync(subscriber_mutex);
+			bool existing = false;
+			for (auto tsq_subscriber : tsq_subscribers) {
+				if (tsq_subscriber == subscriber) {
+					existing = true;
+					break;
+				}
 			}
+			if (!existing)
+				return false;
 		}
-		if (!existing)
-			return false;
 
 		if (!navx_callback_registered) {
 			navx_callback_registered = this->navx_sensor.RegisterCallback(this,
 					NULL);
 		}
 		if (navx_callback_registered) {
+			std::unique_lock<priority_mutex> sync(subscriber_mutex);
 			tsq_subscribers.insert_after(tsq_subscribers.end(), subscriber);
 			return true;
 		}
@@ -147,13 +160,15 @@ public:
 	void timestampedDataReceived(long system_timestamp, long sensor_timestamp,
 			AHRSProtocol::AHRSUpdateBase data, void * context) {
 		std::unique_lock<priority_mutex> sync(subscriber_mutex);
-		curr_data.getValue().set(data.quat_w, data.quat_x, data.quat_y,
-				data.quat_z);
-		curr_data.setTimestamp(sensor_timestamp);
-		Timestamp t;
+		((Timestamp) active_sensor_data_quantities[0]).setTimestamp(sensor_timestamp);
+		((Quaternion) active_sensor_data_quantities[1]).set(data.quat_w, data.quat_x, data.quat_y, data.quat_z);
+		((Scalar)active_sensor_data_quantities[2]).set(data.yaw);
+		((Scalar)active_sensor_data_quantities[3]).set(data.pitch);
+		((Scalar)active_sensor_data_quantities[4]).set(data.roll);
+
+		roborio.getProcessorTimestamp(roborio_timestamp);
 		for (ISensorDataSubscriber *subscriber : tsq_subscribers) {
-			roborio.getProcessorTimestamp(t);
-			subscriber->publish(active_sensor_data_quantities, t);
+			subscriber->publish(active_sensor_data_quantities, roborio_timestamp);
 		}
 	}
 
@@ -181,11 +196,13 @@ public:
 
 	bool getCurrent(forward_list<IQuantity&>& quantities, Timestamp& curr_ts) {
 		if (this->navx_sensor.IsConnected()) {
-			((Quaternion) quantities[0]).set(this->navx_sensor.GetQuaternionW(),
-					this->navx_sensor.GetQuaternionX(),
-					this->navx_sensor.GetDisplacementY(),
-					this->navx_sensor.GetQuaternionZ());
-			curr_ts.setTimestamp(this->navx_sensor.GetLastSensorTimestamp());
+			((Timestamp) quantities[0]).setTimestamp(this->navx_sensor.GetLastSensorTimestamp());
+			((Quaternion) quantities[1]).set(this->navx_sensor.GetQuaternionW(), this->navx_sensor.GetQuaternionX(),
+					this->navx_sensor.GetDisplacementY(), this->navx_sensor.GetQuaternionZ());
+			((Scalar)quantities[2]).set(this->navx_sensor.GetYaw());
+			((Scalar)quantities[3]).set(this->navx_sensor.GetPitch());
+			((Scalar)quantities[4]).set(this->navx_sensor.GetRoll());
+			roborio.getProcessorTimestamp(curr_ts);
 			return true;
 		} else {
 			return false;

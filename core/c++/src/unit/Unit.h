@@ -329,6 +329,73 @@ public:
 				return unit_family;
 			}
 		};
+
+		class Nanoseconds : TimeUnit, IUnit {
+			public:
+			static const float SECONDS_TO_NANOSECONDS = (float) (1.0f * 1000000000);
+			static const float NANOSECONDS_TO_SECONDS = (float) (1.0f / 1000000000);
+
+			string getName() {
+				return "Nanoseconds";
+			}
+
+			string getAbbreviation() {
+				return "ns";
+			}
+
+			float convertToPrimaryUnits(float value) {
+				return value * NANOSECONDS_TO_SECONDS;
+			}
+
+			float convertFromPrimaryUnits(float value) {
+				return value * SECONDS_TO_NANOSECONDS;
+			}
+		};
+
+		class Microseconds : TimeUnit, IUnit {
+			public:
+			static const float SECONDS_TO_MICROSECONDS = (float) (1.0f * 1000000);
+			static const float MICROSECONDS_TO_SECONDS = (float) (1.0f / 1000000);
+
+			string getName() {
+				return "Microseconds";
+			}
+
+			string getAbbreviation() {
+				return "us";
+			}
+
+			float convertToPrimaryUnits(float value) {
+				return value * MICROSECONDS_TO_SECONDS;
+			}
+
+			float convertFromPrimaryUnits(float value) {
+				return value * SECONDS_TO_MICROSECONDS;
+			}
+		};
+
+	class Milliseconds : TimeUnit, IUnit {
+		public:
+		static const float SECONDS_TO_MILLISECONDS = (float) (1.0f * 1000);
+		static const float MILLISECONDS_TO_SECONDS = (float) (1.0f / 1000);
+
+		string getName() {
+			return "Milliseconds";
+		}
+
+		string getAbbreviation() {
+			return "ms";
+		}
+
+		float convertToPrimaryUnits(float value) {
+			return value * MILLISECONDS_TO_SECONDS;
+		}
+
+		float convertFromPrimaryUnits(float value) {
+			return value * SECONDS_TO_MILLISECONDS;
+		}
+	};
+
 		class Seconds: TimeUnit, IUnit {
 		public:
 			string getName() {
@@ -375,6 +442,9 @@ public:
 			}
 		};
 
+		Nanoseconds nanoseconds;
+		Microseconds microseconds;
+		Milliseconds milliseconds;
 		Seconds seconds;
 		Hours hours;
 		Minutes minutes;
@@ -386,6 +456,9 @@ public:
 		Time() {
 			secondary_units.insert_after(secondary_units.end(), &hours);
 			secondary_units.insert_after(secondary_units.end(), &minutes);
+			secondary_units.insert_after(secondary_units.end(), &milliseconds);
+			secondary_units.insert_after(secondary_units.end(), &microseconds);
+			secondary_units.insert_after(secondary_units.end(), &nanoseconds);
 		}
 
 		forward_list<IUnit *>& getSecondaryUnits() {

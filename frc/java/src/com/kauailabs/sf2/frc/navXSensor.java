@@ -57,6 +57,8 @@ public class navXSensor implements ISensorDataSource, ITimestampedDataSubscriber
 	boolean navx_callback_registered;
 	IQuantity[] active_sensor_data_quantities;
 	TimestampInfo navx_tsinfo;
+	Timestamp roborio_timestamp;
+	Object mutex;
 
 	final static int QUANTITY_INDEX_QUATERNION = 0;
 	final static int QUANTITY_INDEX_YAW = 1;
@@ -82,8 +84,9 @@ public class navXSensor implements ISensorDataSource, ITimestampedDataSubscriber
 																	 */
 				1.0 / Timestamp.MILLISECONDS_PER_SECOND, /* Average Latency */
 				ts); /* Clock drift/hour */
-		this.sensor_data_source_infos
-				.add(new SensorDataSourceInfo("Quaternion", new Quaternion(), Quaternion.getUnits()));
+		this.sensor_data_source_infos.add(
+				new SensorDataSourceInfo("Timestamp", ts, new IUnit[] {new Unit().new Time().new Milliseconds()}));
+		this.sensor_data_source_infos.add(new SensorDataSourceInfo("Quaternion", new Quaternion(), Quaternion.getUnits()));
 		this.sensor_data_source_infos.add(
 				new SensorDataSourceInfo("Yaw", new Scalar(), new IUnit[] { new Unit().new Angle().new Degrees() }));
 		this.sensor_data_source_infos.add(
@@ -95,30 +98,35 @@ public class navXSensor implements ISensorDataSource, ITimestampedDataSubscriber
 		ArrayList<IQuantity> quantity_list = new ArrayList<IQuantity>();
 		SensorDataSourceInfo.getQuantityArray(data_source_infos, quantity_list);
 		active_sensor_data_quantities = (IQuantity[]) quantity_list.toArray(new IQuantity[quantity_list.size()]);
+		tsq_subscribers = new ArrayList<ISensorDataSubscriber>();
+		roborio_timestamp = new Timestamp();
+		mutex = new Object();
 	}
 
 	@Override
 	public boolean subscribe(ISensorDataSubscriber subscriber) {
-		synchronized (tsq_subscribers) {
+		synchronized (mutex) {
 			if (tsq_subscribers.contains(subscriber)) {
 				return false;
 			}
-			if (!navx_callback_registered) {
-				navx_callback_registered = this.navx_sensor.registerCallback(this, null);
-			}
-			if (navx_callback_registered) {
+		}
+		if (!navx_callback_registered) {
+			navx_callback_registered = this.navx_sensor.registerCallback(this, null);
+		}
+		if (navx_callback_registered) {
+			synchronized (mutex) {
 				tsq_subscribers.add(subscriber);
-				return true;
-			} else {
-				return false;
 			}
+			return true;
+		} else {
+			return false;
 		}
 	}
 
 	@Override
 	public boolean unsubscribe(ISensorDataSubscriber subscriber) {
 		boolean unsubscribed = false;
-		synchronized (tsq_subscribers) {
+		synchronized (mutex) {
 			unsubscribed = tsq_subscribers.remove(subscriber);
 			if (tsq_subscribers.size() == 0) {
 				if (navx_callback_registered) {
@@ -132,13 +140,16 @@ public class navXSensor implements ISensorDataSource, ITimestampedDataSubscriber
 	@Override
 	public void timestampedDataReceived(long system_timestamp, long sensor_timestamp, AHRSUpdateBase data,
 			Object context) {
-		synchronized (tsq_subscribers) {
-			curr_data.getValue().set(data.quat_w, data.quat_x, data.quat_y, data.quat_z);
-			curr_data.setTimestamp(sensor_timestamp);
+		((Timestamp) active_sensor_data_quantities[0]).setTimestamp(sensor_timestamp);
+		((Quaternion) active_sensor_data_quantities[1]).set(data.quat_w, data.quat_x, data.quat_y, data.quat_z);
+		((Scalar)active_sensor_data_quantities[2]).set(data.yaw);
+		((Scalar)active_sensor_data_quantities[3]).set(data.pitch);
+		((Scalar)active_sensor_data_quantities[4]).set(data.roll);
+
+		roborio.getProcessorTimestamp(roborio_timestamp);
+		synchronized (mutex) {
 			for (ISensorDataSubscriber subscriber : tsq_subscribers) {
-				Timestamp t = new Timestamp();
-				roborio.getProcessorTimestamp(t);
-				subscriber.publish(active_sensor_data_quantities, t);
+				subscriber.publish(active_sensor_data_quantities, roborio_timestamp);
 			}
 		}
 	}
@@ -171,9 +182,13 @@ public class navXSensor implements ISensorDataSource, ITimestampedDataSubscriber
 	@Override
 	public boolean getCurrent(IQuantity[] quantities, Timestamp ts) {
 		if (this.navx_sensor.isConnected()) {
-			((Quaternion) quantities[0]).set(this.navx_sensor.getQuaternionW(), this.navx_sensor.getQuaternionX(),
+			((Timestamp) quantities[0]).setTimestamp(this.navx_sensor.getLastSensorTimestamp());
+			((Quaternion) quantities[1]).set(this.navx_sensor.getQuaternionW(), this.navx_sensor.getQuaternionX(),
 					this.navx_sensor.getDisplacementY(), this.navx_sensor.getQuaternionZ());
-			ts.setTimestamp(this.navx_sensor.getLastSensorTimestamp());
+			((Scalar)quantities[2]).set(this.navx_sensor.getYaw());
+			((Scalar)quantities[3]).set(this.navx_sensor.getPitch());
+			((Scalar)quantities[4]).set(this.navx_sensor.getRoll());
+			roborio.getProcessorTimestamp(ts);
 			return true;
 		} else {
 			return false;

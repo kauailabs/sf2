@@ -210,6 +210,7 @@ class ThreadsafeInterpolatingTimeHistory {
 				 * an object within the volatile (threadsafe) history.
 				 */
 				out.copy(*p_match);
+				out.setInterpolated(false);
 				success = true;
 			}
 		}
