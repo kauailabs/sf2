@@ -51,7 +51,7 @@ public class Robot extends SampleRobot {
 
             if ( stick.getRawButton(1)) {            	
             	if ((Timer.getFPGATimestamp() - last_write_timestamp) > 5.0) {
-            		orientation_history.writeToDirectory("/home/lvuser");
+            		orientation_history.writeToDirectory("/home/lvuser/sf2");
                     last_write_timestamp = Timer.getFPGATimestamp();
             	}
             }            
