@@ -61,6 +61,8 @@ Source: "..\core\c++\src\*.h"; DestDir: "{%HOMEPATH}\wpilib\user\cpp\include"; F
 Source: "..\core\c++\doxygen\html\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\core\docs"
 Source: "..\frc\c++\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\src"
 Source: "..\frc\c++\src\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\src"; Flags: recursesubdirs
+Source: "..\frc\c++\Debug\*.a"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\lib"; Flags: recursesubdirs
+Source: "..\frc\c++\Debug\*.a"; DestDir: "{%HOMEPATH}\wpilib\user\cpp\lib"; Flags: recursesubdirs
 Source: "..\frc\c++\src\*.h"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\include"; Flags: recursesubdirs
 Source: "..\frc\c++\src\*.h"; DestDir: "{%HOMEPATH}\wpilib\user\cpp\include"; Flags: recursesubdirs
 Source: "..\frc\c++\doxygen\html\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\docs"
