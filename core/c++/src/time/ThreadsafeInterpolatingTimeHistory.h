@@ -44,27 +44,45 @@
  */
 
 #include <forward_list>
-#include <list>
+#include <vector>
 #include <string>
 #include <climits>
 #include <regex>
 #include <mutex>
 #include "../unit/Unit.h"
 #include "../platform/File.h"
+#include "TimestampInfo.h"
 using namespace std;
+
+class CustomFilenameFilter: public FilenameFilter {
+	string& prefix;
+	string& suffix;
+public:
+	CustomFilenameFilter(string& prefix, string& suffix) :
+		prefix(prefix),
+		suffix(suffix){
+	}
+	bool accept(File& dir, const string& name) {
+		bool starts_with = (name.find(prefix) == 0);
+		bool ends_with = (name.find(suffix)
+				== name.size() - suffix.size() - 1);
+		return starts_with && ends_with;
+	}
+	~CustomFilenameFilter(){}
+};
 
 template<typename T>
 class ThreadsafeInterpolatingTimeHistory {
-	std::list<T *> history;
+	TimestampInfo ts_info;
+	mutex list_mutex;
+	vector<T *> history;
 	int history_size;
 	int curr_index;
 	int num_valid_samples;
 	T default_obj;
-	TimestampInfo ts_info;
 	string value_name;
-	forward_list<Unit::IUnit> value_units;
-	mutex list_mutex;
 
+public:
 	/**
 	 * Constructs a ThreadsafeInterpolatingTimeHihstory to hold up to a specified number of
 	 * objects of the specified class.
@@ -73,23 +91,28 @@ class ThreadsafeInterpolatingTimeHistory {
 	 */
 
 	ThreadsafeInterpolatingTimeHistory(T& default_obj, int num_samples,
-			TimestampInfo& ts_info, string& name,
-			forward_list<Unit::IUnit *> units) {
+			TimestampInfo& ts_info, string& name) :
+			ts_info(ts_info),
+			list_mutex() {
 		history_size = num_samples;
-		history = new list<T>(num_samples);
+
+		for ( int i = 0; i < num_samples; i++) {
+			T *p_t = new T();
+			history.push_back(p_t);
+		}
 
 		this->default_obj = default_obj;
-
-		for (int i = 0; i < history_size; i++) {
-			T* p_new_t = default_obj.instantiate_copy();
-			if (p_new_t != NULL) {
-				history.add(i, p_new_t);
-			}
-		}
 		curr_index = 0;
 		num_valid_samples = 0;
-		this->ts_info = ts_info;
 		this->value_name = name;
+	}
+
+	~ThreadsafeInterpolatingTimeHistory()
+	{
+		for ( size_t i = 0; i < history.size(); i++) {
+			delete history[i];
+			history[i] = NULL;
+		}
 	}
 
 	/**
@@ -99,7 +122,7 @@ class ThreadsafeInterpolatingTimeHistory {
 	void reset() {
 		std::unique_lock<mutex> sync(list_mutex);
 		for (int i = 0; i < history_size; i++) {
-			T *p_t = history.get(i);
+			T* p_t = history[i];
 			p_t->setValid(false);
 		}
 		curr_index = 0;
@@ -118,9 +141,9 @@ class ThreadsafeInterpolatingTimeHistory {
 	 * Adds the provided object to the ThreadsafeInterpolatingTimeHistory.
 	 * @param t - the object to add
 	 */
-	void add(T t) {
+	void add(T& t) {
 		std::unique_lock<mutex> sync(list_mutex);
-		T *p_existing = history.get(curr_index);
+		T* p_existing = history[curr_index];
 		p_existing->copy(t);
 		curr_index++;
 		if (curr_index >= history_size) {
@@ -154,7 +177,7 @@ class ThreadsafeInterpolatingTimeHistory {
 
 			int entry_index = curr_index;
 			for (int i = 0; i < num_valid_samples; i++) {
-				T *p_obj = history.get(entry_index);
+				T *p_obj = history[entry_index];
 				long entry_timestamp = p_obj->getTimestamp();
 				long delta = entry_timestamp - requested_timestamp;
 				if (delta < 0) {
@@ -198,7 +221,7 @@ class ThreadsafeInterpolatingTimeHistory {
 				double requested_timestamp_ratio = requested_timestamp_offset
 						/ timestamp_delta;
 
-				p_nearest_preceding_obj->interpolate(p_nearest_following_obj,
+				p_nearest_preceding_obj->interpolate(*p_nearest_following_obj,
 						requested_timestamp_ratio, out);
 				out.setInterpolated(true);
 				copy_object = false;
@@ -222,7 +245,7 @@ class ThreadsafeInterpolatingTimeHistory {
 	 * Retrieves the most recently-added object in the ThreadsafeInterpolatingTimeHistory.
 	 * @return - the most recently-added object, or null if no valid objects exist
 	 */
-	bool getMostRecent(T out) {
+	bool getMostRecent(T& out) {
 		T* p_most_recent_t = NULL;
 		{
 			std::unique_lock<mutex> sync(list_mutex);
@@ -233,22 +256,16 @@ class ThreadsafeInterpolatingTimeHistory {
 				if (curr_idx < 0) {
 					curr_idx = (history_size - 1);
 				}
-				p_most_recent_t = history.get(curr_idx);
+				p_most_recent_t = history[curr_idx];
 				if (!p_most_recent_t->getValid()) {
 					p_most_recent_t = NULL;
-				} else {
-					/* Make a copy of the object, so that caller does not directly
-					 * reference an object within the volatile (threadsafe) history. */
-					T* p_new_t = default_obj.instantiate_copy();
-					if (p_new_t != NULL) {
-						p_new_t->copy(p_most_recent_t);
-					}
-					p_most_recent_t = p_new_t;
 				}
 			}
 		}
 		if (p_most_recent_t != NULL) {
-			out.copy(p_most_recent_t);
+			/* Make a copy of the object, so that caller does not directly
+			 * reference an object within the volatile (threadsafe) history. */
+			out.copy(*p_most_recent_t);
 			return true;
 		} else {
 			return false;
@@ -256,11 +273,9 @@ class ThreadsafeInterpolatingTimeHistory {
 	}
 
 	bool writeToDirectory(string& directory) {
-		File dir = new File(directory);
+		File dir(directory);
 		if (!dir.isDirectory() || !dir.canWrite()) {
-			printf(
-					"Directory parameter '" + dir
-							+ "' must be a writable directory.");
+			printf("Directory parameter '%s' must be a writable directory.", directory.c_str());
 			return false;
 		}
 
@@ -272,17 +287,9 @@ class ThreadsafeInterpolatingTimeHistory {
 		string filename_prefix = value_name + "History";
 		string filename_suffix = "csv";
 
-		File f = new File(directory);
+		File f(directory);
 		forward_list<File *> matching_files;
-		class CustomFilenameFilter: FilenameFilter {
-		public:
-			bool accept(File* dir, const string& name) {
-				bool starts_with = (name.find(filename_prefix) == 0);
-				bool ends_with = (name.find(filename_suffix)
-						== name.size() - filename_suffix.size() - 1);
-				return starts_with && ends_with;
-			}
-		} filter;
+		CustomFilenameFilter filter(filename_prefix, filename_suffix);
 		f.listFiles(matching_files, filter);
 
 		int next_available_index = -1;
@@ -304,12 +311,12 @@ class ThreadsafeInterpolatingTimeHistory {
 
 		next_available_index++;
 
-		string new_filename = filename_prefix + string(next_available_index);
+		string new_filename = filename_prefix + std::to_string(next_available_index);
 		return writeToFile(directory + new_filename + "." + filename_suffix);
 	}
 
 	bool writeToFile(const string& file_path) {
-		PrintWriter out = new PrintWriter(file_path);
+		PrintWriter out(file_path);
 		bool success = writeToDiskInternal(out);
 		out.close();
 		return success;
@@ -331,9 +338,9 @@ class ThreadsafeInterpolatingTimeHistory {
 				oldest_index = 0;
 				num_to_write = curr_index + 1;
 			}
-			T first_entry = history.get(oldest_index);
-			forward_list<string> quantity_names;
-			IQuantity& quantity = first_entry.getQuantity();
+			T *p_first_entry = history[oldest_index];
+			vector<string> quantity_names;
+			IQuantity& quantity = p_first_entry->getQuantity();
 			bool is_quantity_container = quantity.getContainedQuantityNames(
 					quantity_names);
 			/* Write Header */
@@ -348,26 +355,24 @@ class ThreadsafeInterpolatingTimeHistory {
 			out.println(header);
 
 			for (int i = 0; i < num_to_write; i++) {
-				forward_list<string> value_string;
-				T entry_to_write = history.get(oldest_index++);
-				quantity = entry_to_write.getQuantity();
-				value_string.insert_after(value_string.end(),
-						string(entry_to_write.getTimestamp()));
-				value_string.insert_after(value_string.end(), ",");
+				vector<string> value_string;
+				T* p_entry_to_write = history[oldest_index++];
+				quantity = p_entry_to_write->getQuantity();
+				value_string.push_back(std::to_string(p_entry_to_write->getTimestamp()));
+				value_string.push_back(",");
 				if (is_quantity_container) {
-					forward_list<IQuantity *> contained_quantities;
+					vector<IQuantity *> contained_quantities;
 					quantity.getContainedQuantities(contained_quantities);
 					int index = 0;
 					for (IQuantity* contained_quantity : contained_quantities) {
-						forward_list<string> printable_string;
+						vector<string> printable_string;
 						if (index++ != 0) {
-							value_string.insert_after(value_string.end(), ",");
+							value_string.push_back(",");
 						}
 						contained_quantity->getPrintableString(
 								printable_string);
 						for (auto string_part : printable_string) {
-							value_string.insert_after(value_string.end(),
-									string_part);
+							value_string.push_back(string_part);
 						}
 					}
 				} else {

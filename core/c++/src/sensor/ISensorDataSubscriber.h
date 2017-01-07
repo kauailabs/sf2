@@ -25,8 +25,11 @@
 #ifndef SRC_SENSOR_ISENSORDATASUBSCRIBER_H_
 #define SRC_SENSOR_ISENSORDATASUBSCRIBER_H_
 
-#include <forward_list>
+#include <vector>
 using namespace std;
+
+#include "quantity/IQuantity.h"
+#include "time/Timestamp.h"
 
 /**
  * Interface to be implemented by any subscriber of Sensor Data of type T.
@@ -36,7 +39,7 @@ using namespace std;
  */
 class ISensorDataSubscriber {
 public:
-	virtual void publish(forward_list<IQuantity*> curr_values,
+	virtual void publish(vector<IQuantity*> curr_values,
 			Timestamp& timestamp) = 0;
 	virtual ~ISensorDataSubscriber() {
 	}

@@ -26,7 +26,16 @@
 
 #include <string>
 #include <cmath>
+#include <vector>
 using namespace std;
+
+#include "sensor/ISensorDataSource.h"
+#include "sensor/SensorDataSourceInfo.h"
+#include "sensor/ISensorInfo.h"
+#include "time/ThreadsafeInterpolatingTimeHistory.h"
+#include "orientation/Quaternion.h"
+#include "time/TimestampedValue.h"
+#include "quantity/Scalar.h"
 
 /**
  * The OrientationHistory class implements a timestamped history of
@@ -45,9 +54,9 @@ using namespace std;
  * @author Scott
  */
 class OrientationHistory: ISensorDataSubscriber {
-	ISensorDataSource& quat_sensor;
-	SensorDataSourceInfo& quat_data_source_info;
-	ThreadsafeInterpolatingTimeHistory<TimestampedValue<Quaternion>> orientation_history;
+	ISensorDataSource* p_quat_sensor;
+	SensorDataSourceInfo* p_quat_data_source_info;
+	ThreadsafeInterpolatingTimeHistory<TimestampedValue<Quaternion>> *p_orientation_history;
 	Scalar temp_s;
 	int quaternion_quantity_index;
 	int timestamp_quantity_index;
@@ -72,32 +81,31 @@ public:
 	 * @param history_length_seconds - the number of seconds the history will represent.  This value
 	 * may not be larger than @value #MAX_ORIENTATION_HISTORY_IN_SECONDS seconds.
 	 */
-	OrientationHistory(ISensorInfo& quat_sensor,
+	OrientationHistory(ISensorInfo* p_sensor,
 			int history_length_num_samples) {
-
-		this->quat_sensor = quat_sensor.getSensorDataSource();
+		this->p_orientation_history = NULL;
+		this->p_quat_sensor = &p_sensor->getSensorDataSource();
 
 		int index = 0;
 		quaternion_quantity_index = -1;
 		timestamp_quantity_index = -1;
-		forward_list<SensorDataSourceInfo *> sensor_data_source_infos;
-		quat_sensor.getSensorDataSource().getSensorDataSourceInfos(
+		vector<SensorDataSourceInfo *> sensor_data_source_infos;
+		p_quat_sensor->getSensorDataSourceInfos(
 				sensor_data_source_infos);
-		for (SensorDataSourceInfo item : sensor_data_source_infos) {
-			if (item.getName().compare("Quaternion") == 0) {
+		for (SensorDataSourceInfo* item : sensor_data_source_infos) {
+			if (item->getName().compare("Quaternion") == 0) {
 				quaternion_quantity_index = index;
-				quat_data_source_info = item;
+				p_quat_data_source_info = item;
 			}
-			if (item.getName().compare("Timestamp") == 0) {
+			if (item->getName().compare("Timestamp") == 0) {
 				timestamp_quantity_index = index;
 			}
 			index++;
 		}
 
 		if (quaternion_quantity_index == -1) {
-			printf(
-					"The provided ISensorInfo (quat_sensor) object"
-							+ "must contain a SensorDataSourceInfo object named 'Quaternion'.");
+			printf( "The provided ISensorInfo (quat_sensor) object"
+					"must contain a SensorDataSourceInfo object named 'Quaternion'.");
 			return;
 		}
 
@@ -106,36 +114,36 @@ public:
 			history_length_num_samples =
 					MAX_ORIENTATION_HISTORY_LENGTH_NUM_SAMPLES;
 		}
-		Quaternion default_quat = new Quaternion();
-		TimestampedValue<Quaternion> default_ts_quat = new TimestampedValue<
-				Quaternion>(default_quat);
-		this->orientation_history = new ThreadsafeInterpolatingTimeHistory<
+		Quaternion default_quat;
+		TimestampedValue<Quaternion> default_ts_quat(default_quat);
+		string data_source_name = p_quat_data_source_info->getName();
+		this->p_orientation_history = new ThreadsafeInterpolatingTimeHistory<
 				TimestampedValue<Quaternion>>(default_ts_quat,
 				history_length_num_samples,
-				quat_sensor.getSensorTimestampInfo(),
-				quat_data_source_info.getName(),
-				quat_data_source_info.getQuantityUnits());
+				p_sensor->getSensorTimestampInfo(),
+				data_source_name);
 
-		this->quat_sensor.subscribe(this);
+		p_quat_sensor->subscribe(this);
 	}
 
 	virtual ~OrientationHistory() {
+		delete p_orientation_history;
 	}
 
 	/**
 	 * Reset the OrientationHistory, clearing all existing entries.
 	 * @param quat_curr
 	 */
-	void reset(TimestampedValue<Quaternion> quat_curr) {
-		orientation_history.reset();
+	void reset() {
+		p_orientation_history->reset();
 	}
 
 	/**
 	 * Retrieves the most recently added Quaternion.
 	 * @return
 	 */
-	bool getCurrentQuaternion(TimestampedValue<Quaternion> out) {
-		return orientation_history.getMostRecent(out);
+	bool getCurrentQuaternion(TimestampedValue<Quaternion>& out) {
+		return p_orientation_history->getMostRecent(out);
 	}
 
 	/**
@@ -149,8 +157,8 @@ public:
 	 * @return TimestampedQuaternion at requested timestamp, or null.
 	 */
 	bool getQuaternionAtTime(long requested_timestamp,
-			TimestampedValue<Quaternion> out) {
-		return orientation_history.get(requested_timestamp, out);
+			TimestampedValue<Quaternion>& out) {
+		return p_orientation_history->get(requested_timestamp, out);
 	}
 
 	/**
@@ -166,7 +174,7 @@ public:
 		TimestampedValue<Quaternion> match;
 		if (getQuaternionAtTime(requested_timestamp, match)) {
 			match.getValue().getYawRadians(temp_s);
-			return temp_s.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
+			return temp_s.get() * Angle::Degrees::RADIANS_TO_DEGREES;
 		} else {
 			return NAN;
 		}
@@ -185,7 +193,7 @@ public:
 		TimestampedValue<Quaternion> match;
 		if (getQuaternionAtTime(requested_timestamp, match)) {
 			match.getValue().getPitch(temp_s);
-			return temp_s.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
+			return temp_s.get() * Angle::Degrees::RADIANS_TO_DEGREES;
 		} else {
 			return NAN;
 		}
@@ -204,31 +212,29 @@ public:
 		TimestampedValue<Quaternion> match;
 		if (getQuaternionAtTime(requested_timestamp, match)) {
 			match.getValue().getRoll(temp_s);
-			return temp_s.get() * Unit::Angle::Degrees::RADIANS_TO_DEGREES;
+			return temp_s.get() * Angle::Degrees::RADIANS_TO_DEGREES;
 		} else {
 			return NAN;
 		}
 	}
 
-	virtual void publish(forward_list<IQuantity&> curr_values,
+	virtual void publish(vector<IQuantity*> curr_values,
 			Timestamp& sys_timestamp) {
-		Timestamp& sensor_timestamp;
+		Timestamp* p_sensor_timestamp = &sys_timestamp;
 		if ( timestamp_quantity_index != -1 ) {
-			sensor_timestamp = ((Timestamp)curr_values[timestamp_quantity_index]);
-		} else {
-			sensor_timestamp = sys_timestamp;
+			p_sensor_timestamp = ((Timestamp *)curr_values[timestamp_quantity_index]);
 		}
-		Quaternion& q = ((Quaternion) curr_values[quaternion_quantity_index]);
-		temp_tsq.set(q,  sensor_timestamp.getMilliseconds());
-		orientation_history.add(temp_tsq);
+		Quaternion* p_q = ((Quaternion *) curr_values[quaternion_quantity_index]);
+		temp_tsq.set(*p_q,  p_sensor_timestamp->getMilliseconds());
+		p_orientation_history->add(temp_tsq);
 	}
 
-	bool writeToDirectory(string& directory_path) {
-		return orientation_history.writeToDirectory(directory_path);
+	bool writeToDirectory(string directory_path) {
+		return p_orientation_history->writeToDirectory(directory_path);
 	}
 
-	bool writeToFile(string& file_path) {
-		return orientation_history.writeToFile(file_path);
+	bool writeToFile(string file_path) {
+		return p_orientation_history->writeToFile(file_path);
 	}
 };
 

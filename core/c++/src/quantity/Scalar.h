@@ -28,7 +28,11 @@
 #include <forward_list>
 using namespace std;
 
-class Scalar: IInterpolate<Scalar>, ICopy<Scalar>, IQuantity {
+#include "interpolation/IInterpolate.h"
+#include "quantity/IQuantity.h"
+#include "quantity/ICopy.h"
+
+class Scalar: public IInterpolate<Scalar>, public ICopy<Scalar>, public IQuantity {
 
 	float value;
 
@@ -67,16 +71,16 @@ public:
 		out.set(interpolated_value);
 	}
 
-	bool getPrintableString(forward_list<string>& printable_string) {
-		printable_string.insert_after(printable_string.end(), string(value));
+	bool getPrintableString(vector<string>& printable_string) {
+		printable_string.push_back(std::to_string(value));
 		return true;
 	}
 
-	bool getContainedQuantities(forward_list<IQuantity *>& quantities) {
+	bool getContainedQuantities(vector<IQuantity *>& quantities) {
 		return false;
 	}
 
-	bool getContainedQuantityNames(forward_list<string>& quantity_names) {
+	bool getContainedQuantityNames(vector<string>& quantity_names) {
 		return false;
 	}
 };

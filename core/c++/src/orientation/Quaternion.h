@@ -36,9 +36,13 @@
 /*----------------------------------------------------------------------------*/
 
 #include <forward_list>
+#include <vector>
 using namespace std;
 
-#include "../Unit/Unit.h"
+#include <math.h>
+#include "unit/Unit.h"
+#include "quantity/Scalar.h"
+
 /**
  * The Quaternion class provides methods to operate on a quaternion.
  * <a href="https://en.wikipedia.org/wiki/Quaternion">Quaternions</a> are used
@@ -69,7 +73,7 @@ using namespace std;
  * @author Scott
  */
 
-class Quaternion: IInterpolate<Quaternion>, ICopy<Quaternion>, IQuantity {
+class Quaternion: public IInterpolate<Quaternion>, public ICopy<Quaternion>, public IQuantity {
 
 	float w;
 	float x;
@@ -77,12 +81,13 @@ class Quaternion: IInterpolate<Quaternion>, ICopy<Quaternion>, IQuantity {
 	float z;
 
 	class FloatVectorStruct {
+	public:
 		float x;
 		float y;
 		float z;
 	};
 
-	static Unit::Unitless component_units;
+	static Unitless component_units;
 
 public:
 	/**
@@ -235,7 +240,7 @@ public:
 		double cosHalfTheta = qa.w * qb.w + qa.x * qb.x + qa.y * qb.y
 				+ qa.z * qb.z;
 		// if qa=qb or qa=-qb then theta = 0 and we can return qa
-		if (abs(cosHalfTheta) >= 1.0) {
+		if (fabs(cosHalfTheta) >= 1.0) {
 			out.w = qa.w;
 			out.x = qa.x;
 			out.y = qa.y;
@@ -247,7 +252,7 @@ public:
 		double sinHalfTheta = sqrt(1.0 - cosHalfTheta * cosHalfTheta);
 		// if theta = 180 degrees then result is not fully defined
 		// we could rotate around any axis normal to qa or qb
-		if (abs(sinHalfTheta) < 0.001) {
+		if (fabs(sinHalfTheta) < 0.001) {
 			out.w = (qa.w * 0.5f + qb.w * 0.5f);
 			out.x = (qa.x * 0.5f + qb.x * 0.5f);
 			out.y = (qa.y * 0.5f + qb.y * 0.5f);
@@ -394,33 +399,34 @@ public:
 	}
 
 	Quaternion* instantiate_copy() {
-		return new Quaternion(this);
+		return new Quaternion(*this);
 	}
 
-	static void getUnits(forward_list<Unit::IUnit *>& units) {
-		units.insert_after(units.end(), &component_units);
-		units.insert_after(units.end(), &component_units);
-		units.insert_after(units.end(), &component_units);
-		units.insert_after(units.end(), &component_units);
+	static void getUnits(vector<IUnit *>& units) {
+		units.clear();
+		units.push_back(&Quaternion::component_units);
+		units.push_back(&Quaternion::component_units);
+		units.push_back(&Quaternion::component_units);
+		units.push_back(&Quaternion::component_units);
 	}
 
-	bool getPrintableString(forward_list<string>& printable_string) {
+	bool getPrintableString(vector<string>& printable_string) {
 		return false;
 	}
 
-	bool getContainedQuantities(forward_list<IQuantity *>& quantities) {
-		quantities.insert_after(quantities.end(), new Scalar(w));
-		quantities.insert_after(quantities.end(), new Scalar(x));
-		quantities.insert_after(quantities.end(), new Scalar(y));
-		quantities.insert_after(quantities.end(), new Scalar(z));
+	bool getContainedQuantities(vector<IQuantity *>& quantities) {
+		quantities.push_back(new Scalar(w));
+		quantities.push_back(new Scalar(x));
+		quantities.push_back(new Scalar(y));
+		quantities.push_back(new Scalar(z));
 		return true;
 	}
 
-	bool getContainedQuantityNames(forward_list<string>& quantity_names) {
-		quantity_names.insert_after(quantity_names.end(), ("W"));
-		quantity_names.insert_after(quantity_names.end(), ("X"));
-		quantity_names.insert_after(quantity_names.end(), ("Y"));
-		quantity_names.insert_after(quantity_names.end(), ("Z"));
+	bool getContainedQuantityNames(vector<string>& quantity_names) {
+		quantity_names.push_back("W");
+		quantity_names.push_back("X");
+		quantity_names.push_back("Y");
+		quantity_names.push_back("Z");
 		return true;
 	}
 };

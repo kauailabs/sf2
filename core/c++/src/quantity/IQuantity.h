@@ -33,13 +33,13 @@ using namespace std;
 class IQuantity {
 public:
 	/* Returns true if this quantity has a printable value */
-	virtual bool getPrintableString(forward_list<string>& printable_string) = 0;
+	virtual bool getPrintableString(vector<string>& printable_string) = 0;
 	/* Returns true if this is a quantity container */
 	virtual bool getContainedQuantities(
-			forward_list<IQuantity *>& quantities) = 0;
+			vector<IQuantity *>& quantities) = 0;
 	/* Returns true if this is a quantity container. */
 	virtual bool getContainedQuantityNames(
-			forward_list<string>& quantity_names) = 0;
+			vector<string>& quantity_names) = 0;
 	virtual ~IQuantity() {
 	}
 };

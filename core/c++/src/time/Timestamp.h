@@ -154,16 +154,16 @@ public:
 	}
 
 	/* IQuantity */
-	bool getPrintableString(forward_list<string>& printable_string) {
-		printable_string.push_front(to_string(timestamp));
+	bool getPrintableString(vector<string>& printable_string) {
+		printable_string.push_back(to_string(timestamp));
 		return true;
 	}
 
-	bool getContainedQuantities(forward_list<IQuantity *>& quantities) {
+	bool getContainedQuantities(vector<IQuantity *>& quantities) {
 		return false;
 	}
 
-	bool getContainedQuantityNames(forward_list<string>& quantity_names) {
+	bool getContainedQuantityNames(vector<string>& quantity_names) {
 		return false;
 	}
 };
