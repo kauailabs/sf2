@@ -30,9 +30,9 @@
 #include "../interpolation/IValueInterpolator.h"
 
 template<typename T>
-class TimestampedValue: ITimestampedValue,
-		ICopy<TimestampedValue<T>>,
-		IValueInterpolator<TimestampedValue<T>> {
+class TimestampedValue: public ITimestampedValue,
+		public ICopy<TimestampedValue<T>>,
+		public IValueInterpolator<TimestampedValue<T>> {
 protected:
 	T value;
 	long timestamp;
@@ -41,6 +41,7 @@ protected:
 	static const uint8_t valid_flag = 0x01;
 	static const uint8_t interpolated_flag = 0x02;
 
+public:
 	TimestampedValue() {
 		timestamp = 0;
 		flags = 0;
@@ -50,7 +51,7 @@ protected:
 	 * Default constructor for a TimestampedValue<T>; initializes all values to reasonable defaults.
 	 */
 	TimestampedValue(T& value) {
-		this->value = value.instantiate_copy();
+		this->value = value;
 		timestamp = 0;
 		flags = 0;
 	}
@@ -72,7 +73,7 @@ protected:
 	 * @param src - source TimestampedValue<T>
 	 */
 	TimestampedValue(TimestampedValue<T>& src) {
-		this->value = src.getValue().instantiate_copy();
+		this->value = src.getValue();
 		this->timestamp = src.timestamp;
 		this->flags = src.flags;
 	}
@@ -190,7 +191,7 @@ protected:
 
 	TimestampedValue<T>* instantiate_copy() {
 		TimestampedValue<T>* new_tsv = new TimestampedValue<T>();
-		new_tsv->value = this->value.instantiate_copy();
+		new_tsv->value = this->value;
 		return new_tsv;
 	}
 

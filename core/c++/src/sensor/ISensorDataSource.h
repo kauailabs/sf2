@@ -24,8 +24,13 @@
 #ifndef SRC_SENSOR_ISENSORDATASOURCE_H_
 #define SRC_SENSOR_ISENSORDATASOURCE_H_
 
-#include <forward_list>
+#include <vector>
 using namespace std;
+
+#include "sensor/ISensorDataSubscriber.h"
+#include "sensor/SensorDataSourceInfo.h"
+#include "quantity/IQuantity.h"
+#include "time/Timestamp.h"
 
 /**
  * The ITimestampedQuaternionSensor interface should be implemented by
@@ -60,7 +65,7 @@ public:
 	 * @return true if valid Sensor was received.  false if data is invalid
 	 * (e.g., the sensor is no longer connected).
 	 */
-	virtual bool getCurrent(forward_list<IQuantity&>& quantities,
+	virtual bool getCurrent(vector<IQuantity*>& quantities,
 			Timestamp& curr_ts) = 0;
 
 	/**
@@ -77,7 +82,7 @@ public:
 	virtual bool reset(int quantity_index) = 0;
 
 	virtual void getSensorDataSourceInfos(
-			forward_list<SensorDataSourceInfo*>& out) = 0;
+			vector<SensorDataSourceInfo*>& out) = 0;
 
 	virtual ~ISensorDataSource() {
 	}

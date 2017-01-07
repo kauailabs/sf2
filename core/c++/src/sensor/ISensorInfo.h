@@ -28,6 +28,9 @@ THE SOFTWARE.
 #include <string>
 using namespace std;
 
+#include "time/TimestampInfo.h"
+#include "sensor/IProcessorInfo.h"
+
 class ISensorInfo {
 public:
 	virtual string getMake() = 0;

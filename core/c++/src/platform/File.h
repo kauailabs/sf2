@@ -37,8 +37,11 @@
 
 using namespace std;
 
+class File;
+
 class FilenameFilter {
-	virtual bool accept(File& dir, string& name) = 0;
+public:
+	virtual bool accept(File& dir, const string& name) = 0;
 	virtual ~FilenameFilter() {
 	}
 };
@@ -66,7 +69,7 @@ public:
 	bool canWrite() {
 		struct stat st;
 		if (stat(path.c_str(), &st) == 0) {
-			if (st.st_mode & S_IFDIR != 0) {
+			if ((st.st_mode & S_IFDIR) != 0) {
 				return true;
 			}
 		}
@@ -94,7 +97,7 @@ public:
 		struct dirent *epdf;
 		dpdf = opendir(path.c_str());
 		if (dpdf != NULL) {
-			while (epdf = readdir(dpdf)) {
+			while ((epdf = readdir(dpdf))) {
 				printf("Filename: %s", epdf->d_name);
 				string fname(epdf->d_name);
 				if (filter.accept(*this, fname)) {

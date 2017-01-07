@@ -27,6 +27,7 @@ package com.kauailabs.sf2.time;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
@@ -268,8 +269,10 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
 
 		File dir = new File(directory);
 		if (!dir.isDirectory() || !dir.canWrite()) {
-			System.out.println("Directory parameter '" + dir + "' must be a writable directory.");
-			return false;
+			if (!dir.mkdirs()) {
+				System.out.println("Directory parameter '" + directory + "' must be a writable directory.");
+				return false;
+			}
 		}
 
 		if ((directory.charAt(directory.length() - 1) != '/') && (directory.charAt(directory.length() - 1) != '\\')) {

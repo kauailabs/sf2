@@ -26,18 +26,32 @@
 #define SRC_SENSOR_SENSORDATASOURCEINFO_H_
 
 #include <string>
+#include <vector>
 using namespace std;
+
+#include "quantity/IQuantity.h"
+#include "unit/Unit.h"
+#include "orientation/Quaternion.h"
+#include "quantity/Scalar.h"
 
 class SensorDataSourceInfo {
 	string name;
-	forward_list<Unit::IUnit*> units;
+	vector<IUnit*> units;
 	IQuantity& value;
 public:
-	SensorDataSourceInfo(string& name, IQuantity& value,
-			forward_list<Unit::IUnit *>& units) {
+	SensorDataSourceInfo(string name, IQuantity& value,
+		vector<IUnit *>& units) :
+		value(value)
+	{
 		this->name = name;
-		this->value = value;
 		this->units = units;
+	}
+
+	SensorDataSourceInfo(string name, IQuantity& value, IUnit&units) :
+		value(value)
+	{
+		this->name = name;
+		this->units.push_back(&units);
 	}
 
 	/**
@@ -62,23 +76,25 @@ public:
 	 * contained within the quantity data type.
 	 * @return
 	 */
-	const forward_list<Unit::IUnit *>& getQuantityUnits() {
+	const vector<IUnit *>& getQuantityUnits() {
 		return units;
 	}
 
 	static void getQuantityArray(
-			forward_list<SensorDataSourceInfo*>& data_source,
-			forward_list<IQuantity*>& quantity_list) {
+			vector<SensorDataSourceInfo*>& data_source,
+			vector<IQuantity*>& quantity_list) {
 		for (SensorDataSourceInfo *p_data_source_info : data_source) {
-			std::type_info qti = typeid(p_data_source_info->getQuantity());
+			const std::type_info& qti = typeid(p_data_source_info->getQuantity());
 			string quantity_name = qti.name();
 			IQuantity *p_new_quantity = NULL;
 			if (quantity_name.compare("Quaternion")) {
-				p_new_quantity = new Quaternion();
+				p_new_quantity = new Quaternion((Quaternion &)p_data_source_info->value);
 			} else if (quantity_name.compare("Scalar")) {
-				p_new_quantity = new Scalar();
+				p_new_quantity = new Scalar((Scalar &)p_data_source_info->value);
+			} else if (quantity_name.compare("Timestamp")) {
+				p_new_quantity = new Timestamp((Timestamp&)p_data_source_info->value);
 			}
-			quantity_list.insert_after(quantity_list.end(), p_new_quantity);
+			quantity_list.push_back(p_new_quantity);
 		}
 	}
 };

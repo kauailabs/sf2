@@ -38,11 +38,13 @@ mkdir java\src
 mkdir java\javadoc
 mkdir java\javadoc\core
 mkdir java\javadoc\frc
+mkdir java\examples\frc
 REM mkdir java\examples
 mkdir labview
 mkdir cpp\src
 mkdir cpp\include
 mkdir cpp\docs
+mkdir cpp\examples\frc
 
 REM Copy Java components
 cp ../core/java/jar/* ./java/lib
@@ -51,6 +53,11 @@ cp -r ../core/java/src/* ./java/src
 cp -r ../frc/java/src/* ./java/src
 cp -r ../core/java/src/docs/* ./java/javadoc/core
 cp -r ../core/java/src/docs/* ./java/javadoc/frc
+cp -r ../frc/java/examples/* ./java/examples/frc
+rm -r -f ./java/examples/frc/*/bin
+rm -r -f ./java/examples/frc/*/build
+rm -r -f ./java/examples/frc/*/dist
+
 REM rm -r ../roborio/java/navXMXP_*/bin
 REM rm -r ../roborio/java/navXMXP_*/build
 cp -r ../core/LabVIEW/* ./labview
@@ -63,6 +70,9 @@ cp -r ../frc/c++/src/* ./cpp/src
 cp -r ../core/c++/src/* ./cpp/include
 cp -r ../frc/c++/src/* ./cpp/include
 cp -r ../frc/c++/doxygen/html/* ./cpp/docs
+cp -r ../frc/c++/examples/* ./cpp/examples/frc
+rm -r -f ./cpp/examples/frc/*/Debug
+rm -r -f ./cpp/examples/frc/*/.settings
 
 cp ../build/version.txt .
 
