@@ -2,7 +2,6 @@ SET VER_MAJOR=1
 SET VER_MINOR=0
 
 SET ECLIPSEC_MARS=C:\Users\Scott\eclipse\cpp-mars\eclipse\eclipsec.exe
-REM Build all binaries
 
 REM CD to Root Directory
 pushd ..
@@ -26,12 +25,12 @@ REM
 REM Begin a command-line "clean build" of the navx frc C++ library
 REM
 
-REM pushd .\roborio\c++
-REM rm -r -f ./build_workspace_luna
-REM mkdir build_workspace_luna
+pushd .\frc
+rm -r -f ./build_workspace_luna
+mkdir build_workspace_luna
 
-REM %ECLIPSEC_MARS% -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -data ./build_workspace_luna -import ./navx_frc_cpp -cleanBuild navx_frc_cpp/Debug
-REM popd
+%ECLIPSEC_MARS% -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -data ./build_workspace_luna -import ./c++ -cleanBuild sf2-frc-cpp/Debug
+popd
 
 REM
 REM Begin a command-line "clean build" of the Debug version of the navx-mxp firmware
