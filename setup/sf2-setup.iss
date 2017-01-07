@@ -46,6 +46,8 @@ Source: "..\core\java\src\*.*"; DestDir: "{%HOMEPATH}\sf2\java\src"; Flags: recu
 Source: "..\frc\java\src\*.*"; DestDir: "{%HOMEPATH}\sf2\java\src"; Flags: recursesubdirs
 Source: "..\core\java\src\docs\*.*"; DestDir: "{%HOMEPATH}\sf2\java\javadoc\core"; Flags: recursesubdirs
 Source: "..\frc\java\src\docs\*.*"; DestDir: "{%HOMEPATH}\sf2\java\javadoc\frc"; Flags: recursesubdirs
+Source: "..\frc\java\examples\sf2-orientation-history-frc\*.*"; DestDir: "{%HOMEPATH}\sf2\java\examples\frc\sf2-orientation-history-frc"
+Source: "..\frc\java\examples\sf2-orientation-history-frc\src\*.*"; DestDir: "{%HOMEPATH}\sf2\java\examples\frc\sf2-orientation-history-frc\src"; Flags: recursesubdirs
 
 Source: "..\core\LabVIEW\*.*"; DestDir: "{%HOMEPATH}\sf2\labview"; Flags: recursesubdirs
 Source: "..\frc\LabVIEW\*.*"; DestDir: "{%HOMEPATH}\sf2\labview"; Flags: recursesubdirs
@@ -63,6 +65,8 @@ Source: "..\frc\c++\src\*.h"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\include"; Flags:
 Source: "..\frc\c++\src\*.h"; DestDir: "{%HOMEPATH}\wpilib\user\cpp\include"; Flags: recursesubdirs
 Source: "..\frc\c++\doxygen\html\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\frc\docs"
 Source: "..\frc\c++\doxygen\html\*.*"; DestDir: "{%HOMEPATH}\wpilib\user\cpp\docs"
+Source: "..\frc\c++\examples\sf2-orientation-history-frc\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\examples\frc\sf2-orientation-history-frc"
+Source: "..\frc\c++\examples\sf2-orientation-history-frc\src\*.*"; DestDir: "{%HOMEPATH}\sf2\cpp\examples\frc\sf2-orientation-history-frc\src"; Flags: recursesubdirs
 
 ;Source: "..\roborio\java\navx_frc\src\com\*.*"; DestDir: "{%HOMEPATH}\navx-mxp\java\src\com"; Flags: recursesubdirs
 ;Source: "..\roborio\java\navx_frc\src\docs\*.*"; DestDir: "{%HOMEPATH}\navx-mxp\java\docs"; Flags: recursesubdirs
