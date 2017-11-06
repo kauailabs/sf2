@@ -26,6 +26,7 @@ package com.kauailabs.sf2.orientation;
 
 import java.util.ArrayList;
 
+import com.kauailabs.sf2.math.Matrix;
 import com.kauailabs.sf2.quantity.IQuantity;
 import com.kauailabs.sf2.quantity.Scalar;
 import com.kauailabs.sf2.sensor.ISensorDataSource;
@@ -252,5 +253,68 @@ public class OrientationHistory implements ISensorDataSubscriber {
 	public boolean writeToFile(String file_path){
 		return orientation_history.writeToFile(file_path);
 	}
-	
+		
+	/**
+	 * Calculates the orientation and angular velocity covariances, based upon
+	 * the contents of the orientation history..
+	 * <p>
+	 * Note that this value may be interpolated if a sample at the requested
+	 * time is not available.
+	 * 
+	 * @param orientation_matrix: Must have a dimensionality of 3.  Output units:  radians.
+	 * @param angular_velocity_matrix:  Must have a dimensionality of 3.  Output units:  radians/sec.
+	 * @return true if covariance was successfully calculated; false otherwise.
+	 */
+	public boolean calculate_covariance(Matrix orientation_matrix, Matrix angular_velocity_matrix) {
+		
+		final int NUM_DIMENSIONS = 3;
+		
+		if(orientation_matrix.get_num_dimensions() != NUM_DIMENSIONS) return false;
+		if(angular_velocity_matrix.get_num_dimensions() != NUM_DIMENSIONS) return false;
+
+		ThreadsafeInterpolatingTimeHistory<TimestampedValue<Quaternion>> snapshot = orientation_history.create_snapshot();
+
+		int num_samples = snapshot.getValidSampleCount();
+		if(num_samples < 1) return false;		
+
+		float ypr_total[] = new float[NUM_DIMENSIONS];
+		float ypr_last[] = new float[NUM_DIMENSIONS];
+		float ypr_avg[] = new float[NUM_DIMENSIONS];		
+		float ypr[][] = new float[NUM_DIMENSIONS][num_samples];
+		
+		float ypr_delta_total[] = new float[NUM_DIMENSIONS];
+		float ypr_delta_avg[] = new float[NUM_DIMENSIONS];
+		float ypr_delta[][] = new float[NUM_DIMENSIONS][num_samples-1];
+		
+		Object pos = snapshot.getFirstPosition();
+		TimestampedValue<Quaternion> q = snapshot.getNext(pos);
+		int i = 0;
+		Quaternion.FloatVectorStruct ypr_struct = new Quaternion().new FloatVectorStruct();
+		while ( q != null) {
+			q.getValue().getYawPitchRollRadians(ypr_struct);
+			ypr[0][i] = ypr_struct.x;
+			ypr[1][i] = ypr_struct.y;
+			ypr[2][i] = ypr_struct.z;
+			if(i > 0) {
+				for ( int x = 0; x < NUM_DIMENSIONS; x++) {
+					ypr_delta[x][i] = ypr[x][i] - ypr_last[x];
+					ypr_delta_total[x] += ypr_delta[x][i];
+				}
+			}
+			for ( int x = 0; x < NUM_DIMENSIONS; x++) {
+				ypr_last[x] = ypr[x][i];
+				ypr_total[x] += ypr_last[x];
+			}
+			i++;
+			q = snapshot.getNext(pos);
+		}
+		/* Calculate Averages */
+		for ( int x = 0; x < NUM_DIMENSIONS; x++) {
+			ypr_avg[x] = ypr_total[x] / num_samples;
+			ypr_delta_avg[x] = ypr_delta_total[x] / (num_samples - 1);
+		}
+		orientation_matrix.calculate_covariance(ypr, ypr_avg, num_samples);
+		angular_velocity_matrix.calculate_covariance(ypr_delta, ypr_delta_avg, num_samples - 1);
+		return true;
+	}
 }

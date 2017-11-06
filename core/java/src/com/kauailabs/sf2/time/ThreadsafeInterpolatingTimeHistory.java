@@ -31,6 +31,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import com.kauailabs.sf2.interpolation.IValueInterpolator;
+import com.kauailabs.sf2.persistence.CSVFileWriter;
+import com.kauailabs.sf2.persistence.IFileWriter;
 import com.kauailabs.sf2.quantity.ICopy;
 import com.kauailabs.sf2.quantity.IQuantity;
 import com.kauailabs.sf2.units.Unit.IUnit;
@@ -53,7 +55,7 @@ import com.kauailabs.sf2.units.Unit.IUnit;
  * @author Scott
  */
 
-public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampedValue & IValueInterpolator<T>> {
+public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampedValue & IValueInterpolator<T>> implements IFileWriter {
 	ArrayList<T> history;
 	int history_size;
 	int curr_index;
@@ -62,6 +64,7 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
 	TimestampInfo ts_info;
 	String value_name;
 	IUnit[] value_units;
+	CSVFileWriter file_writer;
 
 	/**
 	 * Constructs a ThreadsafeInterpolatingTimeHihstory to hold up to a
@@ -90,6 +93,7 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
 		num_valid_samples = 0;
 		this.ts_info = ts_info;
 		this.value_name = name;
+		file_writer = new CSVFileWriter(value_name);
 	}
 
 	/**
@@ -223,6 +227,46 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
 		return success;
 	}
 
+	private class HistoryPointer {			
+		public int next_index;
+		public int num_returned;
+		HistoryPointer() {
+			next_index = 0;
+			num_returned = 0;
+		}
+	}
+	
+	public Object getFirstPosition() {
+		HistoryPointer position = new HistoryPointer();
+		if (num_valid_samples > 0) {
+			int curr_idx = this.curr_index;
+			curr_idx--;
+			if (curr_idx < 0) {
+				curr_idx = (history_size - 1);
+			}
+			position.next_index = curr_idx;
+		}
+		return position;
+	}
+	
+	public T getNext(Object position) {
+		T t = null;
+		if(position != null) {			
+			@SuppressWarnings("unchecked")
+			HistoryPointer pos = (HistoryPointer)position;
+			if(pos.num_returned <= num_valid_samples) {
+				pos.num_returned++;
+				t = history.get(pos.next_index++);		
+				if (pos.next_index >= history_size) {
+					pos.next_index = 0;
+				}
+			} else {
+				t = null;
+			}
+		} 
+		return t;
+	}
+	
 	/**
 	 * Retrieves the most recently-added object in the
 	 * ThreadsafeInterpolatingTimeHistory.
@@ -264,61 +308,8 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
 		}
 	}
 
-	public boolean writeToDirectory(String directory) {
-
-		File dir = new File(directory);
-		if (!dir.isDirectory() || !dir.canWrite()) {
-			if (!dir.mkdirs()) {
-				System.out.println("Directory parameter '" + directory + "' must be a writable directory.");
-				return false;
-			}
-		}
-
-		if ((directory.charAt(directory.length() - 1) != '/') && (directory.charAt(directory.length() - 1) != '\\')) {
-			directory += File.separatorChar;
-		}
-
-		String filename_prefix = value_name + "History";
-		String filename_suffix = "csv";
-
-		File f = new File(directory);
-		File[] matching_files = f.listFiles(new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				return name.startsWith(filename_prefix) && name.endsWith(filename_suffix);
-			}
-		});
-
-		int next_available_index = -1;
-
-		for (File matching_file : matching_files) {
-			String file_name = matching_file.getName();
-			String file_name_prefix = file_name.replaceFirst("[.][^.]+$", "");
-			String file_counter = file_name_prefix.substring(filename_prefix.length());
-			Integer counter = Integer.decode(file_counter);
-			if (counter.intValue() > next_available_index) {
-				next_available_index = counter.intValue();
-			}
-		}
-
-		next_available_index++;
-
-		String new_filename = filename_prefix + Integer.toString(next_available_index);
-		return writeToFile(directory + new_filename + "." + filename_suffix);
-	}
-
-	public boolean writeToFile(String file_path) {
-		try {
-			PrintWriter out = new PrintWriter(file_path);
-			boolean success = writeToDiskInternal(out);
-			out.close();
-			return success;
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
-
-	private boolean writeToDiskInternal(PrintWriter out) {
+	@Override
+	public boolean writeCSV(PrintWriter out) {
 		boolean success = true;
 		// Write header
 		int oldest_index;
@@ -380,5 +371,29 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
 			}
 		}
 		return success;
+	}
+	
+	public ThreadsafeInterpolatingTimeHistory<T> create_snapshot() {
+		ThreadsafeInterpolatingTimeHistory<T> snapshot = 
+			new ThreadsafeInterpolatingTimeHistory(
+					this.default_obj,
+					this.history_size,
+					this.ts_info,
+					this.value_name,
+					this.value_units);
+		
+		synchronized (this) {			
+			/* Replicate data items */
+			snapshot.curr_index = this.curr_index;
+			snapshot.num_valid_samples = this.num_valid_samples;
+		
+			for ( int i = 0; i < this.history.size(); i++) {
+				T src = this.history.get(i);
+				T dest = snapshot.history.get(i);
+				dest.copy(src);
+			}
+		}
+		
+		return snapshot;
 	}
 }
