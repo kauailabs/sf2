@@ -64,7 +64,13 @@ public class navXSensor implements ISensorDataSource, ITimestampedDataSubscriber
 	final static int QUANTITY_INDEX_YAW = 1;
 	final static int QUANTITY_INDEX_PITCH = 2;
 	final static int QUANTITY_INDEX_ROLL = 3;
-
+	final static int QUANTITY_INDEX_LINEAR_ACCEL_X = 4;
+	final static int QUANTITY_INDEX_LINEAR_ACCEL_Y = 5;
+	final static int QUANTITY_INDEX_LINEAR_ACCEL_Z = 6;	
+	final static int QUANTITY_INDEX_VELOCITY_X = 7;
+	final static int QUANTITY_INDEX_VELOCITY_Y = 8;
+	final static int QUANTITY_INDEX_VELOCITY_Z = 9;
+	
 	public navXSensor(AHRS navx_sensor, String sensor_name) {
 		this.navx_sensor = navx_sensor;
 		this.curr_data = new TimestampedValue<Quaternion>(new Quaternion());
@@ -93,6 +99,30 @@ public class navXSensor implements ISensorDataSource, ITimestampedDataSubscriber
 				new SensorDataSourceInfo("Pitch", new Scalar(), new IUnit[] { new Unit().new Angle().new Degrees() }));
 		this.sensor_data_source_infos.add(
 				new SensorDataSourceInfo("Roll", new Scalar(), new IUnit[] { new Unit().new Angle().new Degrees() }));
+		this.sensor_data_source_infos.add(
+				new SensorDataSourceInfo("LinearAccelerationX", new Scalar(), new IUnit[] { new Rate(
+						new Unit().new Distance().new Meters(), 
+						new Unit().new SecondDerivative().new SecondsSquared()) } ));
+		this.sensor_data_source_infos.add(
+				new SensorDataSourceInfo("LinearAccelerationY", new Scalar(), new IUnit[] { new Rate(
+						new Unit().new Distance().new Meters(), 
+						new Unit().new SecondDerivative().new SecondsSquared()) } ));
+		this.sensor_data_source_infos.add(
+				new SensorDataSourceInfo("LinearAccelerationZ", new Scalar(), new IUnit[] { new Rate(
+						new Unit().new Distance().new Meters(), 
+						new Unit().new SecondDerivative().new SecondsSquared()) } ));
+		this.sensor_data_source_infos.add(
+				new SensorDataSourceInfo("VelocityX", new Scalar(), new IUnit[] { new Rate(
+						new Unit().new Distance().new Meters(), 
+						new Unit().new Time().new Seconds()) } ));
+		this.sensor_data_source_infos.add(
+				new SensorDataSourceInfo("VelocityY", new Scalar(), new IUnit[] { new Rate(
+						new Unit().new Distance().new Meters(), 
+						new Unit().new Time().new Seconds()) } ));
+		this.sensor_data_source_infos.add(
+				new SensorDataSourceInfo("VelocityZ", new Scalar(), new IUnit[] { new Rate(
+						new Unit().new Distance().new Meters(), 
+						new Unit().new Time().new Seconds()) } ));
 		SensorDataSourceInfo[] data_source_infos = ((SensorDataSourceInfo[]) sensor_data_source_infos
 				.toArray(new SensorDataSourceInfo[sensor_data_source_infos.size()]));
 		ArrayList<IQuantity> quantity_list = new ArrayList<IQuantity>();
@@ -145,6 +175,9 @@ public class navXSensor implements ISensorDataSource, ITimestampedDataSubscriber
 		((Scalar)active_sensor_data_quantities[2]).set(data.yaw);
 		((Scalar)active_sensor_data_quantities[3]).set(data.pitch);
 		((Scalar)active_sensor_data_quantities[4]).set(data.roll);
+		((Scalar)active_sensor_data_quantities[5]).set(data.linear_accel_x);
+		((Scalar)active_sensor_data_quantities[6]).set(data.linear_accel_y);
+		((Scalar)active_sensor_data_quantities[7]).set(data.linear_accel_z);		
 
 		roborio.getProcessorTimestamp(roborio_timestamp);
 		synchronized (mutex) {
