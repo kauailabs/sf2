@@ -53,7 +53,7 @@ class navXSensor: public ISensorDataSource, public ITimestampedDataSubscriber, p
 	bool navx_callback_registered;
 	vector<IQuantity*> active_sensor_data_quantities;
 	TimestampInfo navx_tsinfo;
-	priority_mutex subscriber_mutex;
+	std::mutex subscriber_mutex;
 	Quaternion quaternion;
 	Scalar yaw, pitch, roll;
 	Timestamp ts;
@@ -105,7 +105,7 @@ public:
 
 	bool subscribe(ISensorDataSubscriber* subscriber) {
 		{
-			std::unique_lock<priority_mutex> sync(subscriber_mutex);
+			std::unique_lock<std::mutex> sync(subscriber_mutex);
 			bool existing = false;
 			for (auto tsq_subscriber : tsq_subscribers) {
 				if (tsq_subscriber == subscriber) {
@@ -122,7 +122,7 @@ public:
 					NULL);
 		}
 		if (navx_callback_registered) {
-			std::unique_lock<priority_mutex> sync(subscriber_mutex);
+			std::unique_lock<std::mutex> sync(subscriber_mutex);
 			tsq_subscribers.push_front(subscriber);
 			return true;
 		}
@@ -130,7 +130,7 @@ public:
 	}
 
 	bool unsubscribe(ISensorDataSubscriber* subscriber) {
-		std::unique_lock<priority_mutex> sync(subscriber_mutex);
+		std::unique_lock<std::mutex> sync(subscriber_mutex);
 
 		bool existing = false;
 		for (auto tsq_subscriber : tsq_subscribers) {
@@ -154,7 +154,7 @@ public:
 
 	void timestampedDataReceived(long system_timestamp, long sensor_timestamp,
 			AHRSProtocol::AHRSUpdateBase& data, void * context) {
-		std::unique_lock<priority_mutex> sync(subscriber_mutex);
+		std::unique_lock<std::mutex> sync(subscriber_mutex);
 		((Timestamp *) active_sensor_data_quantities[0])->setTimestamp(sensor_timestamp);
 		((Quaternion *) active_sensor_data_quantities[1])->set(data.quat_w, data.quat_x, data.quat_y, data.quat_z);
 		((Scalar *)active_sensor_data_quantities[2])->set(data.yaw);

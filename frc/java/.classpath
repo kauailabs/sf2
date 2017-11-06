@@ -5,6 +5,6 @@
 	<classpathentry kind="var" path="networktables" sourcepath="networktables.sources"/>
 	<classpathentry kind="var" path="wpilib" sourcepath="wpilib.sources"/>
 	<classpathentry kind="var" path="navx-mxp"/>
-	<classpathentry kind="var" path="sf2"/>
+	<classpathentry kind="var" path="sf2" sourcepath="/sf2-src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

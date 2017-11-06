@@ -91,7 +91,6 @@ public class Pose implements IInterpolate<Pose>, ICopy<Pose>, IQuantity {
 	 */
 
 	public static void interpolate(Pose from, Pose to, double t, Pose out) {
-		Pose interp_pose = null;
 		/* First, interpolate the aggregate Quaternion */
 		from.quat.interpolate(to.quat, t, out.quat);
 		/* Interpolate the X and Y offsets */

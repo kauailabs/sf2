@@ -26,7 +26,6 @@ package com.kauailabs.sf2.time;
 
 import java.util.ArrayList;
 
-import com.kauailabs.sf2.quantity.Count;
 import com.kauailabs.sf2.quantity.IQuantity;
 
 public class Timestamp implements IQuantity {
