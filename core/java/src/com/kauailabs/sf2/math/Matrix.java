@@ -7,14 +7,16 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import com.kauailabs.sf2.persistence.CSVFileWriter;
+import com.kauailabs.sf2.persistence.ICSVFileWriter;
 import com.kauailabs.sf2.quantity.IQuantity;
 
-public class Matrix extends CSVFileWriter {
+public class Matrix extends CSVFileWriter implements ICSVFileWriter {
 	int num_dimensions;
 	float matrix[][];	
 	String[] dimension_names;
 	public Matrix(String name, int num_dimensions, String[] dimension_names) {
 		super(name + "Matrix");
+		setWriter(this);
 		this.num_dimensions = num_dimensions;
 		matrix = new float[num_dimensions][num_dimensions];
 		this.dimension_names = dimension_names;

@@ -7,10 +7,17 @@ import java.io.PrintWriter;
 
 public class CSVFileWriter implements IFileWriter {
 	String file_name_prefix;
+	ICSVFileWriter csv_writer;
+	public CSVFileWriter(String file_name_prefix, ICSVFileWriter csv_writer) {
+		this.file_name_prefix = file_name_prefix;
+		this.csv_writer = csv_writer;
+	}
 	public CSVFileWriter(String file_name_prefix) {
 		this.file_name_prefix = file_name_prefix;
 	}
-	
+	public void setWriter(ICSVFileWriter csv_writer) {
+		this.csv_writer = csv_writer;
+	}	
 	public boolean writeToDirectory(String directory) {
 
 		File dir = new File(directory);
@@ -65,7 +72,7 @@ public class CSVFileWriter implements IFileWriter {
 		}
 	}
 
-	public boolean writeCSV(PrintWriter out) { 
-		return false; 
+	protected boolean writeCSV(PrintWriter out) { 
+		return csv_writer.writeCSV(out);
 	}
 }

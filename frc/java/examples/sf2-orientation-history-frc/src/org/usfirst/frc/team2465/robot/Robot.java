@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * as well as historical (from the Orientation Time History) are displayed, as 
  * well as the change in the yaw, pitch and roll angles during that time.
  */
+@SuppressWarnings("deprecation")
 public class Robot extends SampleRobot {
     AHRS ahrs;
     OrientationHistory orientation_history;

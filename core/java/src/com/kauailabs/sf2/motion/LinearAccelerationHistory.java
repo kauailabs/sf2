@@ -27,8 +27,6 @@ package com.kauailabs.sf2.motion;
 import java.util.ArrayList;
 
 import com.kauailabs.sf2.math.Matrix;
-import com.kauailabs.sf2.orientation.Quaternion;
-import com.kauailabs.sf2.orientation.Quaternion.FloatVectorStruct;
 import com.kauailabs.sf2.quantity.IQuantity;
 import com.kauailabs.sf2.quantity.Scalar;
 import com.kauailabs.sf2.quantity.Topic;

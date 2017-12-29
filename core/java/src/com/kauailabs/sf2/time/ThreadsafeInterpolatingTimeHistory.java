@@ -32,6 +32,7 @@ import java.util.ArrayList;
 
 import com.kauailabs.sf2.interpolation.IValueInterpolator;
 import com.kauailabs.sf2.persistence.CSVFileWriter;
+import com.kauailabs.sf2.persistence.ICSVFileWriter;
 import com.kauailabs.sf2.persistence.IFileWriter;
 import com.kauailabs.sf2.quantity.ICopy;
 import com.kauailabs.sf2.quantity.IQuantity;
@@ -55,7 +56,7 @@ import com.kauailabs.sf2.units.Unit.IUnit;
  * @author Scott
  */
 
-public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampedValue & IValueInterpolator<T>> implements IFileWriter {
+public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampedValue & IValueInterpolator<T>> implements IFileWriter, ICSVFileWriter {
 	ArrayList<T> history;
 	int history_size;
 	int curr_index;
@@ -93,7 +94,7 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
 		num_valid_samples = 0;
 		this.ts_info = ts_info;
 		this.value_name = name;
-		file_writer = new CSVFileWriter(value_name);
+		file_writer = new CSVFileWriter(value_name, this);
 	}
 
 	/**
@@ -395,5 +396,15 @@ public class ThreadsafeInterpolatingTimeHistory<T extends ICopy<T> & ITimestampe
 		}
 		
 		return snapshot;
+	}
+
+	@Override
+	public boolean writeToDirectory(String directory) {
+		return file_writer.writeToDirectory(directory);
+	}
+
+	@Override
+	public boolean writeToFile(String file_path) {
+		return file_writer.writeToFile(file_path);
 	}
 }

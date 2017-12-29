@@ -26,6 +26,7 @@ OutputBaseFilename=setup
 Compression=lzma
 SolidCompression=yes
 OutputDir=.\Output_SF2
+SignTool=signtool
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

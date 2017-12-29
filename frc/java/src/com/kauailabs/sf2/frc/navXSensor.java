@@ -42,6 +42,7 @@ import com.kauailabs.sf2.sensor.SensorDataSourceInfo;
 import com.kauailabs.sf2.time.Timestamp;
 import com.kauailabs.sf2.time.TimestampInfo;
 import com.kauailabs.sf2.time.TimestampedValue;
+import com.kauailabs.sf2.units.Rate;
 import com.kauailabs.sf2.units.Unit;
 import com.kauailabs.sf2.units.Unit.IUnit;
 
