@@ -1,2 +1,24 @@
-apply plugin: 'idea'
-apply plugin: 'java'
+plugins {
+    id "java"
+    id "idea"
+    id "edu.wpi.first.GradleRIO" version "2018.06.21"
+}
+
+dependencies {
+    implementation wpilib()
+    implementation navx()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs=['core/java/src','frc/java/src']
+        }
+    }
+}
+
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
